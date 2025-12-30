@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dasar Lemah 2D</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --danger: #ef4444;
+      --ok: #10b981;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin: 0 0 20px;
+      letter-spacing: 0.2px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+    }
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-secondary {
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-delete {
+      background: linear-gradient(90deg, var(--danger), #f87171);
+      color: #0b1020;
+    }
+    .btn-edit {
+      background: linear-gradient(90deg, #FF9800, #FFB347);
+      color: #0b1020;
+    }
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      display: none;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #0c1220;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .digit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #12192a, #0d1424);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+    .status {
+      text-align: center;
+      min-height: 24px;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .success { color: var(--ok); }
+    .error { color: var(--danger); }
+    .saved-list {
+      margin-top: 20px;
+    }
+    .saved-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .saved-item:last-child {
+      border-bottom: none;
+    }
+    .saved-item button {
+      background: var(--ok);
+      color: #0b1020;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 36px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <h1>Dasar Lemah 2D</h1>
+
+    <div class="card">
+      <div style="margin-bottom: 16px;">
+        <label for="marketSelect">Pilih Market</label>
+        <select id="marketSelect">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <div>
+          <label for="resultSebelum">Result Sebelumnya (4D)</label>
+          <input type="text" id="resultSebelum" placeholder="Contoh: 1234" maxlength="4" />
+        </div>
+        <div>
+          <label for="resultSekarang">Result Sekarang (4D)</label>
+          <input type="text" id="resultSekarang" placeholder="Contoh: 9076" maxlength="4" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnCari">Cari</button>
+        <button class="btn-secondary" id="btnEdit">Edit</button>
+        <button id="btnSimpan">Simpan ke Cloud</button>
+        <button class="btn-delete" id="btnHapus">Hapus dari Cloud</button>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div id="resultBox" class="result" style="display: none;">
+        <div>Kunci 2D (kop): <strong id="show2D">--</strong></div>
+        <div>Dasar Lemah: <span id="showDasar">--</span></div>
+      </div>
+    </div>
+
+    <div class="card saved-list" id="savedList">
+      <h3>Data Tersimpan</h3>
+      <p><em>Pilih market untuk memuat data.</em></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <!-- Gunakan config terpusat -->
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    // === LOGIKA DASAR LEMAH (TIDAK DIUBAH) ===
+    function SeededRandom(seed) {
+      this.seed = seed % 2147483647;
+      if (this.seed <= 0) this.seed += 2147483646;
+    }
+    SeededRandom.prototype.next = function() {
+      return this.seed = this.seed * 16807 % 2147483647;
+    };
+    SeededRandom.prototype.random = function() {
+      return (this.next() - 1) / 2147483646;
+    };
+
+    function generateFullWeakMap() {
+      const weakMap = {};
+      const seed = 12345;
+      const rand = new SeededRandom(seed);
+
+      for (let num = 0; num <= 99; num++) {
+        let d1 = Math.floor(rand.random() * 9) + 1;
+        let d2 = Math.floor(rand.random() * 9) + 1;
+        if (d1 === d2) d2 = d1 === 9 ? 1 : d1 + 1;
+        const key = num.toString().padStart(2, '0');
+        weakMap[key] = [d1, d2];
+      }
+      weakMap['28'] = [3, 4];
+      weakMap['82'] = [1, 2];
+      return weakMap;
+    }
+
+    const fullWeakMap = generateFullWeakMap();
+    let savedData = {};
+    let current2D = null;
+    let selectedMarket = null;
+
+    // === UTILITAS ===
+    function showStatus(text, type = "") {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = "status " + type;
+    }
+
+    function renderSavedList(market) {
+      const container = document.getElementById('savedList');
+      let html = '<h3>Data Tersimpan</h3>';
+      if (Object.keys(savedData).length === 0) {
+        html += `<p><em>Tidak ada data tersimpan untuk ${market}.</em></p>`;
+      } else {
+        html += '<div>';
+        Object.entries(savedData).forEach(([key, [d1, d2]]) => {
+          html += `
+            <div class="saved-item">
+              <span><strong>${key}</strong>: ${d1} & ${d2}</span>
+              <button onclick="useSaved('${key}')">Pakai</button>
+            </div>
+          `;
+        });
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    window.useSaved = function(key) {
+      if (!savedData[key]) return;
+      const [d1, d2] = savedData[key];
+      document.getElementById('show2D').textContent = key;
+      document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
+      document.getElementById('resultBox').style.display = 'block';
+      current2D = key;
+      showStatus(`✅ Data ${key} dimuat.`, "success");
+    };
+
+    function getKop2D(resultSebelum, resultSekarang) {
+      if (resultSebelum.length !== 4 || resultSekarang.length !== 4) return null;
+      return resultSebelum[1] + resultSekarang[1];
+    }
+
+    // === INISIALISASI UTAMA ===
+    document.addEventListener('DOMContentLoaded', () => {
+      // Tunggu hingga Firebase siap (sama seperti rumah1)
+      if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat. Periksa config-firebase.js", "error");
+        return;
+      }
+
+      const database = firebase.database(); // ✅ Ambil dari config terpusat
+
+      const marketSelect = document.getElementById('marketSelect');
+      const resultSebelum = document.getElementById('resultSebelum');
+      const resultSekarang = document.getElementById('resultSekarang');
+      const btnCari = document.getElementById('btnCari');
+      const btnEdit = document.getElementById('btnEdit');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const btnHapus = document.getElementById('btnHapus');
+
+      [resultSebelum, resultSekarang].forEach(el => {
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/[^0-9]/g, '').slice(0, 4);
+        });
+      });
+
+      btnCari.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) return showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+        const r1 = resultSebelum.value.trim();
+        const r2 = resultSekarang.value.trim();
+        if (r1.length !== 4 || r2.length !== 4) return showStatus("⚠️ Masukkan dua result 4D.", "error");
+        const key2D = getKop2D(r1, r2);
+        if (!key2D || !fullWeakMap[key2D]) return showStatus("❌ Kombinasi kop tidak valid.", "error");
+
+        const [d1, d2] = fullWeakMap[key2D];
+        document.getElementById('show2D').textContent = key2D;
+        document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
+        document.getElementById('resultBox').style.display = 'block';
+        current2D = key2D;
+        selectedMarket = market;
+        showStatus("✅ Dasar lemah siap.", "success");
+      });
+
+      btnEdit.addEventListener('click', () => {
+        if (!current2D || !selectedMarket) return showStatus("ℹ️ Tidak ada data untuk diedit.", "error");
+        const newData = prompt(`Edit dasar lemah untuk ${current2D} (format: d1,d2)`);
+        if (newData) {
+          const parts = newData.split(',').map(p => p.trim());
+          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            const [d1, d2] = parts.map(Number);
+            if (d1 >= 1 && d1 <= 9 && d2 >= 1 && d2 <= 9 && d1 !== d2) {
+              database.ref(`rumah2/${selectedMarket}/${current2D}`).set([d1, d2])
+                .then(() => {
+                  document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
+                  savedData[current2D] = [d1, d2];
+                  renderSavedList(selectedMarket);
+                  showStatus("✅ Data diperbarui.", "success");
+                });
+            } else {
+              alert("Nilai harus 1–9 dan berbeda.");
+            }
+          }
+        }
+      });
+
+      btnSimpan.addEventListener('click', () => {
+        if (!current2D || !selectedMarket) return showStatus("⚠️ Tidak ada hasil untuk disimpan.", "error");
+        const [d1, d2] = fullWeakMap[current2D];
+        database.ref(`rumah2/${selectedMarket}/${current2D}`).set([d1, d2])
+          .then(() => {
+            savedData[current2D] = [d1, d2];
+            localStorage.setItem('lastMarket', selectedMarket);
+            showStatus("✅ Tersimpan ke cloud!", "success");
+            renderSavedList(selectedMarket);
+          })
+          .catch(err => {
+            console.error("Simpan error:", err);
+            showStatus("❌ Gagal simpan: cek koneksi.", "error");
+          });
+      });
+
+      btnHapus.addEventListener('click', () => {
+        if (!current2D || !selectedMarket || !savedData[current2D]) return showStatus("ℹ️ Tidak ada data cloud untuk dihapus.", "error");
+        if (!confirm(`Hapus ${current2D} dari ${selectedMarket}?`)) return;
+        database.ref(`rumah2/${selectedMarket}/${current2D}`).remove()
+          .then(() => {
+            delete savedData[current2D];
+            current2D = null;
+            document.getElementById('resultBox').style.display = 'none';
+            localStorage.removeItem('lastMarket');
+            showStatus("🗑️ Data dihapus.", "success");
+            renderSavedList(selectedMarket);
+          })
+          .catch(err => {
+            console.error("Hapus error:", err);
+            showStatus("❌ Gagal hapus.", "error");
+          });
+      });
+
+      marketSelect.addEventListener('change', () => {
+        const market = marketSelect.value;
+        if (market) {
+          loadLatestData(database, market);
+        } else {
+          document.getElementById('savedList').innerHTML = '<h3>Data Tersimpan</h3><p><em>Pilih market untuk memuat data.</em></p>';
+          savedData = {};
+          current2D = null;
+        }
+      });
+
+      const lastMarket = localStorage.getItem('lastMarket');
+      if (lastMarket) {
+        marketSelect.value = lastMarket;
+        setTimeout(() => loadLatestData(database, lastMarket), 300);
+      }
+    });
+
+    async function loadLatestData(database, market) {
+      try {
+        const snapshot = await database.ref(`rumah2/${market}`).once('value');
+        savedData = snapshot.val() || {};
+        renderSavedList(market);
+      } catch (err) {
+        console.warn("Gagal muat data:", err);
+        showStatus("⚠️ Gagal muat data dari cloud.", "error");
+      }
+    }
+  </script>
+</body>
+</html>
