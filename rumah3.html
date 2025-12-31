@@ -213,9 +213,9 @@
       <a href="index.html">🔙 Kembali ke Beranda</a>
     </div>
 
-    <!-- 🔻 TOMBOL KLONING DIHAPUS SESUAI PERMINTAAN -->
+    <!-- 🔻 TOMBOL KLONING DIHAPUS — HANYA INI YANG DIHAPUS DARI UI -->
     <div class="global-buttons">
-      <button id="btn-apply-all" class="btn-apply-all">🔄 Terapkan Rumus</button>
+      <button id="btn-apply-all" class="btn-apply-all">🔄 Terapkan Semua Rumus</button>
       <button id="btn-save-all" class="btn-save-all">💾 Simpan ke Firebase</button>
       <button id="btn-clear-all" class="btn-clear-all">❌ Hapus Semua (Firebase)</button>
     </div>
@@ -234,14 +234,14 @@
       }, 100);
     }
 
-    // 🔹 GUNAKAN FIREBASE DARI CONFIG EKSTERNAL
+    // 🔹 GUNAKAN FIREBASE DARI CONFIG EKSTERNAL (PROYEK: sabar-2e686)
     import { db } from './config-firebase.js';
     import { ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong"];
     let instanceCounter = 0;
 
-    // 🔹 LOGIKA RUMUS (TIDAK DIUBAH)
+    // 🔹 LOGIKA RUMUS (100% DIPERTAHANKAN)
     const shioAngka = {
       1: [1,13,25,37,49,61,73,85,97],
       2: [2,14,26,38,50,62,74,86,98],
@@ -357,14 +357,13 @@
       }
     }
 
-    // 🔹 BUAT SATU INSTANS SAJA
+    // 🔹 BUAT INSTANS (DAPAT DIPANGGIL BERKALI-KALI SAAT LOAD DATA LAMA)
     async function createKamarInstance(savedData = null) {
       const currentId = instanceCounter++;
       const div = document.createElement('div');
       div.className = 'kamar-instance';
       div.dataset.instanceId = currentId;
 
-      // Market select
       const marketSelect = document.createElement('select');
       marketSelect.className = 'market-select';
       MARKETS.forEach(m => {
@@ -374,16 +373,16 @@
         marketSelect.appendChild(opt);
       });
 
-      // Set market aktif dari localStorage
-      let activeMarket = localStorage.getItem('activeMarket');
-      if (!activeMarket || !MARKETS.includes(activeMarket)) activeMarket = 'Cambodia';
+      let activeMarket = localStorage.getItem('activeMarket') || 'Cambodia';
+      if (!MARKETS.includes(activeMarket)) activeMarket = 'Cambodia';
+
       if (savedData && MARKETS.includes(savedData.market)) {
         marketSelect.value = savedData.market;
       } else {
         marketSelect.value = activeMarket;
       }
 
-      // Simpan dan muat ulang saat ganti market
+      // Event ganti market → simpan & auto-load
       marketSelect.addEventListener('change', async () => {
         const m = marketSelect.value;
         localStorage.setItem('activeMarket', m);
@@ -410,7 +409,7 @@
         div.appendChild(group);
       });
 
-      // Input 4D — readonly, otomatis dari Firebase
+      // Input 4D — readonly
       const resultInputs = [
         { label: '4D Result Sebelumnya', cls: 'result4d-lalu', value: savedData?.result4DLalu || '' },
         { label: '4D Result Sekarang', cls: 'result4d-sekarang', value: savedData?.result4D || '' }
@@ -426,7 +425,7 @@
         div.appendChild(group);
       });
 
-      // Tabel hasil
+      // Tabel
       const table = document.createElement('table');
       table.innerHTML = `<thead><tr><th>Kamar</th><th>Rumus Lemah</th></tr></thead><tbody></tbody>`;
       const tbody = table.querySelector('tbody');
@@ -454,7 +453,7 @@
       btnGroup.appendChild(btnApply);
       div.appendChild(btnGroup);
 
-      // 🔹 Load result awal
+      // 🔹 Load initial results
       const initialMarket = marketSelect.value;
       const { lalu, skr } = await loadLatestResults(initialMarket);
       div.querySelector('.result4d-lalu').value = lalu;
@@ -505,59 +504,68 @@
       }
     }
 
+    // 🔹 TETAP LOOP SEMUA INSTANS (MULTI-INSTANS DIDUKUNG)
     function terapkanSemuaRumus() {
-      // Hanya satu instans, jadi sama seperti terapkan rumus
-      const inst = document.querySelector('.kamar-instance');
-      if (inst) {
-        const id = inst.dataset.instanceId;
-        terapkanRumusUntukInstans(inst, id);
+      const instances = document.querySelectorAll('.kamar-instance');
+      if (instances.length === 0) {
+        showMessage('⚠️ Tidak ada instans.', true);
+        return;
       }
+      instances.forEach(inst => {
+        const instanceId = inst.dataset.instanceId;
+        terapkanRumusUntukInstans(inst, instanceId);
+      });
+      showMessage('✅ Semua rumus diterapkan.');
     }
 
+    // 🔹 SIMPAN SEMUA INSTANS YANG ADA (ARRAY)
     async function saveAllToFirebase() {
       if (window.location.protocol === 'file:') {
         showMessage('❌ Akses dari file lokal! Buka via GitHub Pages.', true);
         return;
       }
 
-      const inst = document.querySelector('.kamar-instance');
-      if (!inst) {
+      const container = document.getElementById('instances-container');
+      const entries = [];
+      const dateStr = getFormattedDate();
+
+      const instances = container.querySelectorAll('.kamar-instance');
+      if (instances.length === 0) {
         showMessage('⚠️ Tidak ada data untuk disimpan.', true);
         return;
       }
 
-      const instanceId = inst.dataset.instanceId;
-      const market = inst.querySelector('.market-select').value;
-      const seb = inst.querySelector('.tanggal-sebelum').value.trim();
-      const skr = inst.querySelector('.tanggal-sekarang').value.trim();
-      const lalu = inst.querySelector('.result4d-lalu').value.trim();
-      const skr4D = inst.querySelector('.result4d-sekarang').value.trim();
+      instances.forEach(inst => {
+        const instanceId = inst.dataset.instanceId;
+        const market = inst.querySelector('.market-select').value;
+        const seb = inst.querySelector('.tanggal-sebelum').value.trim();
+        const skr = inst.querySelector('.tanggal-sekarang').value.trim();
+        const lalu = inst.querySelector('.result4d-lalu').value.trim();
+        const skr4D = inst.querySelector('.result4d-sekarang').value.trim();
 
-      const hasil = {};
-      for (let i = 1; i <= 12; i++) {
-        const cell = document.getElementById(`rumus-${instanceId}-${i}`);
-        if (cell && cell.textContent !== "—") {
-          hasil[i] = cell.textContent;
+        const hasil = {};
+        for (let i = 1; i <= 12; i++) {
+          const cell = document.getElementById(`rumus-${instanceId}-${i}`);
+          if (cell && cell.textContent !== "—") {
+            hasil[i] = cell.textContent;
+          }
         }
-      }
 
-      const dateStr = getFormattedDate();
+        entries.push({
+          market,
+          tanggalSebelum: seb,
+          tanggalSekarang: skr,
+          result4DLalu: lalu,
+          result4D: skr4D,
+          hasil,
+          date: dateStr
+        });
+      });
+
       const saveId = 'kamar-' + Date.now();
       const saveRef = ref(db, `generator_2d/kamar/${saveId}`);
-
       try {
-        await set(saveRef, {
-          entries: [{
-            market,
-            tanggalSebelum: seb,
-            tanggalSekarang: skr,
-            result4DLalu: lalu,
-            result4D: skr4D,
-            hasil,
-            date: dateStr
-          }],
-          savedAt: Date.now()
-        });
+        await set(saveRef, { entries, savedAt: Date.now() });
         showMessage('✅ Data tersimpan ke Firebase.');
       } catch (err) {
         console.error('Firebase save error:', err);
@@ -578,13 +586,14 @@
       try {
         await remove(ref(db, 'generator_2d/kamar'));
         showMessage('🗑️ Semua data Firebase dihapus.');
-        init();
+        loadFromFirebase(); // muat ulang → akan buat instans baru
       } catch (err) {
         console.error('Firebase remove error:', err);
         showMessage('❌ Gagal hapus data Firebase.', true);
       }
     }
 
+    // 🔹 MUAT SEMUA ENTRI DARI DATA LAMA (MULTI-INSTANS)
     async function loadFromFirebase() {
       const container = document.getElementById('instances-container');
       container.innerHTML = '';
@@ -602,11 +611,12 @@
             }
           }
 
-          if (latestEntry && latestEntry.entries?.length > 0) {
-            const entry = latestEntry.entries[0]; // ambil yang pertama saja
-            const inst = await createKamarInstance(entry);
-            container.appendChild(inst);
-            showMessage('✅ Data sebelumnya dimuat.');
+          if (latestEntry && latestEntry.entries && Array.isArray(latestEntry.entries)) {
+            for (const entry of latestEntry.entries) {
+              const inst = await createKamarInstance(entry);
+              container.appendChild(inst);
+            }
+            showMessage(`✅ Memuat ${latestEntry.entries.length} instans dari Firebase.`);
             return;
           }
         }
@@ -614,7 +624,7 @@
         console.warn('Gagal muat data simpanan:', err);
       }
 
-      // Jika tidak ada data atau error → buat baru
+      // Jika tidak ada data → buat 1 instans baru
       const inst = await createKamarInstance();
       container.appendChild(inst);
     }
@@ -622,6 +632,7 @@
     function init() {
       loadFromFirebase();
 
+      // 🔹 HANYA 3 EVENT LISTENER (TANPA CLONE)
       document.getElementById('btn-apply-all').addEventListener('click', terapkanSemuaRumus);
       document.getElementById('btn-save-all').addEventListener('click', saveAllToFirebase);
       document.getElementById('btn-clear-all').addEventListener('click', clearAllFromFirebase);
