@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -231,7 +233,7 @@
       ⚠️ Kamu membuka file ini secara lokal (<code>file://</code>).<br>
       <strong>Firebase TIDAK AKAN BERJALAN!</strong><br>
       Untuk menyimpan data, akses via:<br>
-      <code>https://andi887.github.io/karenadoe/rumah3.html</code>
+      <code>https://namagithub.github.io/nomoromosse/fitur4.html</code>
     </div>
 
     <div class="back-home">
@@ -257,15 +259,28 @@
     // 🔍 DETEKSI AKSES FILE LOKAL
     if (window.location.protocol === 'file:') {
       document.getElementById('local-warning').style.display = 'block';
+      // Nonaktifkan tombol simpan
       setTimeout(() => {
         const saveBtn = document.getElementById('btn-save-all');
         if (saveBtn) saveBtn.disabled = true;
       }, 100);
     }
 
-    // 🔹 PERUBAHAN #1: GANTI KE CONFIG-FIREBASE.JS (PROYEK sabar-2e686)
-    import { db } from './config-firebase.js';
-    import { ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "nomoromosse.firebaseapp.com",
+      databaseURL: "https://nomoromosse-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "nomoromosse",
+      storageBucket: "nomoromosse.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong"];
     let instanceCounter = 0;
@@ -370,22 +385,6 @@
       return `${day}/${month}`;
     }
 
-    // 🔹 PERUBAHAN #2: FUNGSI UNTUK MUAT RESULT DARI MARKET
-    async function loadMarketResults(market) {
-      try {
-        const snap = await get(ref(db, `pasaran/${market}/results`));
-        if (!snap.exists() || !Array.isArray(snap.val())) return { lalu: '', skr: '' };
-        const results = snap.val().filter(r => /^[0-9]{4}$/.test(r));
-        if (results.length === 0) return { lalu: '', skr: '' };
-        if (results.length === 1) return { lalu: '', skr: results[0] };
-        const idx = results.length - 1;
-        return { lalu: results[idx - 1], skr: results[idx] };
-      } catch (err) {
-        console.warn('Gagal muat result untuk market:', market);
-        return { lalu: '', skr: '' };
-      }
-    }
-
     function createKamarInstance(isOriginal = false, savedData = null) {
       const currentId = instanceCounter++;
       const div = document.createElement('div');
@@ -462,21 +461,6 @@
       btnGroup.appendChild(btnDelete);
       div.appendChild(btnGroup);
 
-      // 🔹 PERUBAHAN #3 & #4: EVENT LISTENER + LOAD AWAL
-      marketSelect.addEventListener('change', async () => {
-        const { lalu, skr } = await loadMarketResults(marketSelect.value);
-        div.querySelector('.result4d-lalu').value = lalu;
-        div.querySelector('.result4d-sekarang').value = skr;
-      });
-
-      // Load result awal berdasarkan market yang dipilih
-      if (marketSelect.value) {
-        loadMarketResults(marketSelect.value).then(({ lalu, skr }) => {
-          div.querySelector('.result4d-lalu').value = lalu;
-          div.querySelector('.result4d-sekarang').value = skr;
-        });
-      }
-
       return div;
     }
 
@@ -551,6 +535,7 @@
     }
 
     async function saveAllToFirebase() {
+      // Cek akses lokal
       if (window.location.protocol === 'file:') {
         showMessage('❌ Akses dari file lokal! Buka via GitHub Pages.', true);
         return;
