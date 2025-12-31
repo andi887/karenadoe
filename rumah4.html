@@ -45,6 +45,12 @@
       margin: 0 0 20px;
       letter-spacing: 0.2px;
     }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
     .card {
       background: linear-gradient(180deg, #121826, #0f1624);
       border: 1px solid rgba(255,255,255,0.06);
@@ -176,6 +182,7 @@
     </div>
 
     <h2>Kelompok</h2>
+    <div id="market-status"></div>
 
     <div class="card">
       <div style="margin-bottom: 16px;">
@@ -202,6 +209,7 @@
         <button class="btn-secondary" id="btnEdit">Edit</button>
         <button id="btnSimpan">Simpan ke Cloud</button>
         <button class="btn-delete" id="btnHapus">Hapus dari Cloud</button>
+        <button id="btnMuatDariRumah1" class="btn-secondary">Muat dari rumah1</button>
       </div>
 
       <div id="status" class="status"></div>
@@ -213,7 +221,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK - DIPERBAIKI: HAPUS SPASI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
@@ -292,10 +300,34 @@
       });
     }
 
+    // === MUAT 1 RES TERAKHIR DARI rumah1 ===
+    async function loadLatestResFromRumah1(database, market) {
+      if (!market) return;
+      try {
+        const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
+        const data = snapshot.val();
+        if (!Array.isArray(data) || data.length < 1) {
+          showStatus("ℹ️ Tidak ada data di rumah1.", "error");
+          return;
+        }
+        const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
+        if (validRows.length < 1) {
+          showStatus("ℹ️ Tidak ada result valid di rumah1.", "error");
+          return;
+        }
+        const lastRes = validRows[validRows.length - 1][1];
+        document.getElementById('input4D').value = lastRes;
+        showStatus("✅ Result terakhir dari rumah1 dimuat.", "success");
+      } catch (err) {
+        console.error("Gagal muat dari rumah1:", err);
+        showStatus("⚠️ Gagal muat data dari rumah1.", "error");
+      }
+    }
+
     // === INISIALISASI DOM ===
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        showStatus("⚠️ Firebase tidak dimuat. Periksa config-firebase.js", "error");
+        showStatus("⚠️ Firebase tidak dimuat.", "error");
         return;
       }
       const database = firebase.database();
@@ -306,6 +338,8 @@
       const btnEdit = document.getElementById('btnEdit');
       const btnSimpan = document.getElementById('btnSimpan');
       const btnHapus = document.getElementById('btnHapus');
+      const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
+      const marketStatusEl = document.getElementById('market-status');
 
       input4D.addEventListener('input', () => {
         input4D.value = input4D.value.replace(/[^0-9]/g, '').slice(0, 4);
@@ -316,7 +350,34 @@
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+      } else {
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
+        marketStatusEl.style.color = "#ef4444";
       }
+
+      marketSelect.addEventListener('change', () => {
+        selectedMarket = marketSelect.value;
+        if (selectedMarket) {
+          localStorage.setItem('marketAktif', selectedMarket);
+          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          loadLatestData(database, selectedMarket);
+        } else {
+          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+          document.getElementById('hasil').style.display = 'none';
+          currentKey = null;
+          currentData = null;
+        }
+      });
+
+      // Muat dari rumah1
+      btnMuatDariRumah1.addEventListener('click', () => {
+        if (!selectedMarket) {
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        loadLatestResFromRumah1(database, selectedMarket);
+      });
 
       btnCari.addEventListener('click', () => {
         const market = marketSelect.value;
@@ -346,8 +407,8 @@
           input4D: raw,
           kopAs2D: kopAs2D,
           kamar: kamar,
-          market: market,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
+          market: market
+          // TIDAK simpan timestamp di sini → simpan langsung saat push
         };
         selectedMarket = market;
         showStatus("✅ Hasil siap.", "success");
@@ -358,6 +419,7 @@
           input4D.value = currentData.input4D;
           marketSelect.value = currentData.market;
           selectedMarket = currentData.market;
+          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
           showStatus("✏️ Edit input, lalu klik Cari.", "success");
         } else {
           showStatus("ℹ️ Tidak ada data untuk diedit.", "error");
@@ -369,8 +431,13 @@
           showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
           return;
         }
+        // ✅ Gunakan server timestamp saat push
+        const dataToSave = {
+          ...currentData,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
         const ref = database.ref(`rumah4/${selectedMarket}`).push();
-        ref.set(currentData).then(() => {
+        ref.set(dataToSave).then(() => {
           currentKey = ref.key;
           showStatus("✅ Data tersimpan ke cloud!", "success");
         }).catch(err => {
@@ -396,18 +463,6 @@
             console.error("Hapus error:", err);
             showStatus("❌ Gagal hapus: cek koneksi.", "error");
           });
-      });
-
-      marketSelect.addEventListener('change', () => {
-        selectedMarket = marketSelect.value;
-        if (selectedMarket) {
-          localStorage.setItem('marketAktif', selectedMarket);
-          loadLatestData(database, selectedMarket);
-        } else {
-          document.getElementById('hasil').style.display = 'none';
-          currentKey = null;
-          currentData = null;
-        }
       });
 
       if (marketAktif) {
