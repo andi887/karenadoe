@@ -122,28 +122,6 @@
       border-radius: 12px;
       display: none;
     }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #0c1220;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .digit {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, #12192a, #0d1424);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 800;
-      font-size: 1.15rem;
-      color: var(--text);
-    }
     .status {
       text-align: center;
       min-height: 24px;
@@ -180,6 +158,12 @@
       background-size: 16px;
       padding-right: 36px;
     }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -189,6 +173,7 @@
     </div>
 
     <h1>Dasar Lemah 2D</h1>
+    <div id="market-status"></div>
 
     <div class="card">
       <div style="margin-bottom: 16px;">
@@ -221,6 +206,7 @@
         <button class="btn-secondary" id="btnEdit">Edit</button>
         <button id="btnSimpan">Simpan ke Cloud</button>
         <button class="btn-delete" id="btnHapus">Hapus dari Cloud</button>
+        <button id="btnMuatDariRumah1" class="btn-secondary">Muat dari rumah1</button>
       </div>
 
       <div id="status" class="status"></div>
@@ -237,10 +223,9 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK - DIPERBAIKI: HAPUS SPASI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <!-- Gunakan config terpusat -->
   <script src="./config-firebase.js"></script>
 
   <script>
@@ -260,7 +245,6 @@
       const weakMap = {};
       const seed = 12345;
       const rand = new SeededRandom(seed);
-
       for (let num = 0; num <= 99; num++) {
         let d1 = Math.floor(rand.random() * 9) + 1;
         let d2 = Math.floor(rand.random() * 9) + 1;
@@ -320,15 +304,40 @@
       return resultSebelum[1] + resultSekarang[1];
     }
 
+    // === MUAT 2 RES TERAKHIR DARI rumah1 ===
+    async function loadLatestTwoResFromRumah1(database, market) {
+      if (!market) return;
+      try {
+        const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
+        const data = snapshot.val();
+        if (!Array.isArray(data) || data.length < 2) {
+          showStatus("ℹ️ Data rumah1 kurang dari 2 baris.", "error");
+          return;
+        }
+        // Ambil hanya baris dengan res valid
+        const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
+        if (validRows.length < 2) {
+          showStatus("ℹ️ Kurang dari 2 result valid di rumah1.", "error");
+          return;
+        }
+        const prev = validRows[validRows.length - 2][1];
+        const curr = validRows[validRows.length - 1][1];
+        document.getElementById('resultSebelum').value = prev;
+        document.getElementById('resultSekarang').value = curr;
+        showStatus("✅ 2 result terakhir dari rumah1 dimuat.", "success");
+      } catch (err) {
+        console.error("Gagal muat dari rumah1:", err);
+        showStatus("⚠️ Gagal muat data dari rumah1.", "error");
+      }
+    }
+
     // === INISIALISASI UTAMA ===
     document.addEventListener('DOMContentLoaded', () => {
-      // Tunggu hingga Firebase siap (sama seperti rumah1)
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        showStatus("⚠️ Firebase tidak dimuat. Periksa config-firebase.js", "error");
+        showStatus("⚠️ Firebase tidak dimuat.", "error");
         return;
       }
-
-      const database = firebase.database(); // ✅ Ambil dari config terpusat
+      const database = firebase.database();
 
       const marketSelect = document.getElementById('marketSelect');
       const resultSebelum = document.getElementById('resultSebelum');
@@ -337,6 +346,8 @@
       const btnEdit = document.getElementById('btnEdit');
       const btnSimpan = document.getElementById('btnSimpan');
       const btnHapus = document.getElementById('btnHapus');
+      const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
+      const marketStatusEl = document.getElementById('market-status');
 
       [resultSebelum, resultSekarang].forEach(el => {
         el.addEventListener('input', () => {
@@ -344,6 +355,42 @@
         });
       });
 
+      // Baca market aktif dari localStorage
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif) {
+        marketSelect.value = marketAktif;
+        selectedMarket = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+        loadLatestData(database, marketAktif);
+      } else {
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
+        marketStatusEl.style.color = "#ef4444";
+      }
+
+      marketSelect.addEventListener('change', () => {
+        selectedMarket = marketSelect.value;
+        if (selectedMarket) {
+          localStorage.setItem('marketAktif', selectedMarket);
+          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          loadLatestData(database, selectedMarket);
+        } else {
+          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+          document.getElementById('savedList').innerHTML = '<h3>Data Tersimpan</h3><p><em>Pilih market untuk memuat data.</em></p>';
+          savedData = {};
+          current2D = null;
+        }
+      });
+
+      // Muat dari rumah1
+      btnMuatDariRumah1.addEventListener('click', () => {
+        if (!selectedMarket) {
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        loadLatestTwoResFromRumah1(database, selectedMarket);
+      });
+
+      // === SISA LOGIKA (Cari, Simpan, Edit, Hapus) TETAP SAMA ===
       btnCari.addEventListener('click', () => {
         const market = marketSelect.value;
         if (!market) return showStatus("⚠️ Pilih market terlebih dahulu.", "error");
@@ -390,7 +437,6 @@
         database.ref(`rumah2/${selectedMarket}/${current2D}`).set([d1, d2])
           .then(() => {
             savedData[current2D] = [d1, d2];
-            localStorage.setItem('lastMarket', selectedMarket);
             showStatus("✅ Tersimpan ke cloud!", "success");
             renderSavedList(selectedMarket);
           })
@@ -408,7 +454,6 @@
             delete savedData[current2D];
             current2D = null;
             document.getElementById('resultBox').style.display = 'none';
-            localStorage.removeItem('lastMarket');
             showStatus("🗑️ Data dihapus.", "success");
             renderSavedList(selectedMarket);
           })
@@ -417,23 +462,6 @@
             showStatus("❌ Gagal hapus.", "error");
           });
       });
-
-      marketSelect.addEventListener('change', () => {
-        const market = marketSelect.value;
-        if (market) {
-          loadLatestData(database, market);
-        } else {
-          document.getElementById('savedList').innerHTML = '<h3>Data Tersimpan</h3><p><em>Pilih market untuk memuat data.</em></p>';
-          savedData = {};
-          current2D = null;
-        }
-      });
-
-      const lastMarket = localStorage.getItem('lastMarket');
-      if (lastMarket) {
-        marketSelect.value = lastMarket;
-        setTimeout(() => loadLatestData(database, lastMarket), 300);
-      }
     });
 
     async function loadLatestData(database, market) {
@@ -442,8 +470,8 @@
         savedData = snapshot.val() || {};
         renderSavedList(market);
       } catch (err) {
-        console.warn("Gagal muat data:", err);
-        showStatus("⚠️ Gagal muat data dari cloud.", "error");
+        console.warn("Gagal muat data rumah2:", err);
+        showStatus("⚠️ Gagal muat data rumah2.", "error");
       }
     }
   </script>
