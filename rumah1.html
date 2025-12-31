@@ -104,7 +104,6 @@
     }
     .add-row-btn { background-color: #FF9800; color: white; }
     .save-firebase-btn { background-color: #4CAF50; color: white; }
-    .export-btn { background-color: #673AB7; color: white; }
     .delete-btn {
       background-color: #f44336;
       color: white;
@@ -120,17 +119,6 @@
     }
     .success { color: #4CAF50; }
     .error { color: #f44336; }
-    #export-output {
-      width: 100%;
-      height: 150px;
-      margin-top: 15px;
-      font-family: monospace;
-      font-size: 14px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: vertical;
-    }
     @media (max-width: 600px) {
       .controls { flex-direction: column; align-items: center; }
       button { width: 100%; max-width: 200px; }
@@ -175,18 +163,15 @@
   <div class="controls">
     <button class="add-row-btn" id="add-row">Tambah Baris</button>
     <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
-    <button class="export-btn" id="export-rows">Ekspor ke Baris</button>
   </div>
 
-  <textarea id="export-output" placeholder="Klik 'Ekspor ke Baris' untuk mengonversi data menjadi format: tgl | res | kontrol | nilai"></textarea>
-
-  <!-- Firebase Dependencies (Compat Mode) - DIPERBAIKI: HAPUS SPASI -->
+  <!-- Firebase Dependencies (Compat Mode) - DIPERBAIKI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // === KONSTANTA & FUNGSI PERHITUNGAN (TETAP SAMA) ===
+    // === KONSTANTA KONTROL ===
     const KONTROL_B = {1:["1","2","6","7","8","9"],2:["0","2","3","7","8","9"],3:["0","1","3","4","8","9"],4:["0","1","2","4","5","9"],5:["0","1","2","3","5","6"],6:["1","2","3","4","6","7"],7:["2","3","4","5","7","8"],8:["3","4","5","6","8","9"],9:["0","4","5","6","7","9"],0:["1","2","3","4","5","6"]};
     const KONTROL_C = {0:["3","4","5","6","8","9"],1:["0","2","3","4","6","9"],2:["1","2","3","5","6","8"],3:["0","1","2","3","4","9"],4:["1","2","3","6","8","9"],5:["0","1","2","3","4","5","9"],6:["0","2","3","5","6","9"],7:["0","1","2","3","8","9"],8:["2","3","4","6","7","9"],9:["1","2","3","4","5","6"]};
     const KONTROL_G = {0:["0","1","2","7","8","9"],1:["0","1","2","3","8","9"],2:["0","1","2","3","4","9"],3:["0","1","2","3","4","5"],4:["1","2","3","4","5","6"],5:["2","3","4","5","6","7"],6:["3","4","5","6","7","8"],7:["4","5","6","7","8","9"],8:["5","6","7","8","9","0"],9:["6","7","8","9","0","1"]};
@@ -200,8 +185,7 @@
     const KONTROL_M = {0:["9","0","1","2","3"],1:["8","9","0","1","2"],2:["3","4","5","6","7"],3:["3","4","5","6","7"],4:["5","6","7","8","9"],5:["0","1","2","3","4"],6:["7","8","9","0","1"],7:["2","3","4","5","6"],8:["1","2","3","4","5"],9:["4","5","6","7","8"]};
     const KONTROL_N = {0:["1","4","6","9"],1:["0","2","5","7"],2:["1","3","6","8"],3:["2","4","7","9"],4:["0","3","5","8"],5:["6","4","1","9"],6:["7","5","0","2"],7:["8","6","3","1"],8:["9","7","4","2"],9:["0","8","5","3"]};
 
-    // === FUNGSI PERHITUNGAN (SAMA SEPERTI SEBELUMNYA) ===
-    // ... [semua fungsi calculateKontrolB hingga calculateKontrolN] ...
+    // === FUNGSI PERHITUNGAN (SINGKAT UNTUK RUANG - LOGIKA SAMA) ===
     function calculateKontrolB(resSourceValue, resTargetValue) {
       if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
         return { value: "", isError: false };
@@ -224,8 +208,7 @@
       else return { value: "X", isError: true };
     }
 
-    // (Fungsi calculateKontrolC hingga calculateKontrolN tetap sama — dipersingkat untuk ruang)
-
+    // --- Fungsi C hingga N dipersingkat untuk efisiensi (logic unchanged) ---
     function calculateKontrolC(resSourceValue, resTargetValue) {
       const kepalaSource = resSourceValue[2];
       const kontrolList = KONTROL_C[kepalaSource];
@@ -475,7 +458,7 @@
       setTimeout(() => statusEl.textContent = '', 3000);
     }
 
-    // === LOGIKA TABEL (TETAP SAMA) ===
+    // === LOGIKA TABEL ===
     function calculateRow(targetRow) {
       const tbody = targetRow.parentElement;
       const allRows = Array.from(tbody.querySelectorAll('tr'));
@@ -625,32 +608,6 @@
       }
     }
 
-    // === EKSPOR KE BARIS (TETAP SAMA) ===
-    function exportToRows() {
-      const rows = Array.from(document.querySelectorAll('#rumah1-table tbody tr'));
-      const headers = ["tgl", "res", "B", "C", "D", "G", "H", "I", "J", "K", "R", "Y", "A", "M", "N", "L"];
-      let outputLines = [];
-
-      rows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        if (inputs.length < 16) return;
-
-        const tgl = inputs[0].value.trim();
-        const res = inputs[1].value.trim();
-        if (!tgl || !res) return;
-
-        for (let i = 2; i <= 14; i++) {
-          const val = inputs[i].value.trim();
-          if (val && val !== "X" && val !== "x") {
-            const kode = headers[i].toUpperCase();
-            outputLines.push(`${tgl}\t${res}\t${kode}\t${val}`);
-          }
-        }
-      });
-
-      document.getElementById('export-output').value = outputLines.join('\n') || "Tidak ada data valid untuk diekspor.";
-    }
-
     // === INISIALISASI UTAMA ===
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
@@ -658,7 +615,6 @@
         return;
       }
 
-      // Baca market aktif dari localStorage
       currentMarket = localStorage.getItem('marketAktif');
       const marketStatusEl = document.getElementById('market-status');
       if (currentMarket) {
@@ -677,7 +633,6 @@
       });
 
       document.getElementById('save-firebase').addEventListener('click', saveDataToFirebase);
-      document.getElementById('export-rows').addEventListener('click', exportToRows);
     });
   </script>
 </body>
