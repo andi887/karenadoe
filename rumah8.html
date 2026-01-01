@@ -197,26 +197,14 @@
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase Dependencies (Tanpa Spasi) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <!-- Gunakan config terpusat -->
+  <script src="./config-firebase.js"></script>
 
   <script>
-    // 🔐 Firebase Config - Proyek SABAR
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const database = firebase.database();
+    // 🔁 MARKETS (harus sama dengan di index.html)
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
 
     // ─── FUNGSI BANTU ───────────────────────────────────────
@@ -239,7 +227,7 @@
       return pairs.join('*');
     }
 
-    // ─── MUAT DARI RUMAH1 (MEKANISME SAMA SEPERTI RUMAH2) ───
+    // ─── MUAT DARI RUMAH1 (PERBAIKAN UTAMA) ─────────────────
     async function loadFromRumah1(market) {
       if (!market || !MARKETS.includes(market)) {
         alert("Pilih market terlebih dahulu!");
@@ -247,10 +235,8 @@
       }
 
       try {
-        const snapshot = await database.ref(`rumah1/${market}`)
-          .orderByChild("0")
-          .limitToLast(1)
-          .once("value");
+        // ✅ PATH YANG BENAR: rumah1/{market}/data
+        const snapshot = await firebase.database().ref(`rumah1/${market}/data`).once('value');
 
         if (!snapshot.exists()) {
           alert(`Tidak ada data untuk ${market} di rumah1.`);
@@ -258,18 +244,21 @@
         }
 
         const data = snapshot.val();
-        const keys = Object.keys(data).sort(); // urutkan key Firebase
-        const lastKey = keys[keys.length - 1];
-        const entry = data[lastKey];
-
-        if (!Array.isArray(entry) || entry.length < 2) {
-          alert("Format data di rumah1 tidak valid (harus array).");
+        if (!Array.isArray(data) || data.length === 0) {
+          alert(`Data untuk ${market} kosong.`);
           return;
         }
 
-        const resValue = (entry[1] || "").toString().trim();
+        // Ambil baris terakhir
+        const lastRow = data[data.length - 1];
+        if (!Array.isArray(lastRow) || lastRow.length < 2) {
+          alert("Format baris data tidak valid.");
+          return;
+        }
+
+        const resValue = (lastRow[1] || "").toString().trim();
         if (!/^\d{4}$/.test(resValue)) {
-          alert(`Result tidak valid: "${resValue}" (harus 4 digit angka).`);
+          alert(`Result tidak valid: "${resValue}"`);
           return;
         }
 
@@ -279,7 +268,7 @@
         calculate();
 
       } catch (err) {
-        console.error("Error saat muat dari rumah1:", err);
+        console.error("Error muat dari rumah1:", err);
         alert("Gagal memuat data. Cek koneksi atau struktur data.");
       }
     }
@@ -313,7 +302,7 @@
         timestamp: firebase.database.ServerValue.TIMESTAMP
       };
 
-      database.ref(`rumah8/${market}`).push(data)
+      firebase.database().ref(`rumah8/${market}`).push(data)
         .then(() => {
           statusEl.textContent = "✅ Berhasil disimpan ke cloud!";
           statusEl.className = "status success";
@@ -326,7 +315,7 @@
         });
     }
 
-    // ─── SALIN RINGKASAN (HANYA ANGKA MERAH, DIPISAH *) ─────
+    // ─── SALIN RINGKASAN ────────────────────────────────────
     function copySummary() {
       const fmt1 = document.getElementById('formatted1').textContent;
       const fmt2 = document.getElementById('formatted2').textContent;
