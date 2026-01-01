@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>saringandua</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 15px;
+      background: #f0f8ff;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.4em;
+    }
+
+    .back-home {
+      text-align: center;
+      margin: 12px 0;
+    }
+    .back-home a {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #4285f4;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95em;
+    }
+    .back-home a:hover {
+      background: #3367d6;
+    }
+
+    .cloning-controls {
+      text-align: center;
+      margin: 15px 0;
+    }
+    .cloning-controls button {
+      padding: 10px 16px;
+      background: #673ab7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cloning-controls button:hover {
+      background: #512da8;
+    }
+
+    .saringan-panel {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #ffffff;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .panel-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #2c3e50;
+    }
+    .market-select {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.95em;
+    }
+
+    .form-group {
+      margin: 12px 0;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin: 15px 0;
+    }
+    .btn-group button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .generateBtn { background: #4CAF50; }
+    .generateBtn:hover { background: #45a049; }
+    .saveBtn { background: #2196F3; }
+    .saveBtn:hover { background: #0b7dda; }
+    .clearBtn { background: #f44336; color: white; }
+    .clearBtn:hover { background: #d32f2f; }
+
+    .status {
+      text-align: center;
+      font-size: 12px;
+      min-height: 18px;
+      margin: 5px 0;
+    }
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
+
+    .result-box {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .result {
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .copy-btn {
+      background: #9C27B0;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background: #7B1FA2;
+    }
+    .section {
+      margin-top: 12px;
+    }
+    .title {
+      font-weight: bold;
+      margin-top: 8px;
+      color: #2c3e50;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      .btn-group { flex-direction: column; }
+      .btn-group button { width: 100%; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    }
+  </style>
+
+  <!-- 🔥 Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // 🔐 Ganti ke proyek SABAR
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    if (!window.firebaseApp) {
+      const app = initializeApp(firebaseConfig);
+      window.firebaseApp = app;
+      window.db = getDatabase(app);
+    }
+  </script>
+</head>
+<body>
+  <h1>🔢 saringandua</h1>
+
+  <div class="back-home">
+    <a href="index.html">🔙 Kembali ke Beranda</a>
+  </div>
+
+  <div class="cloning-controls">
+    <button id="cloneBtn">➕ Kloning Saringan</button>
+  </div>
+
+  <div id="panels-container">
+    <!-- Panel pertama akan dibuat oleh init -->
+  </div>
+
+  <script>
+    // === KONFIGURASI ===
+    const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
+    let panelCount = 0;
+    const allPanels = new Map();
+
+    // === HELPER FUNGSI ===
+    function hitungDasar2D_2digit(duaDigit) {
+      const a = parseInt(duaDigit[0], 10);
+      const b = parseInt(duaDigit[1], 10);
+      let total = a + b;
+      while (total >= 10) {
+        total = String(total).split('').reduce((sum, d) => sum + parseInt(d), 0);
+      }
+      return total === 0 ? 9 : total;
+    }
+
+    function getTwinNumbers() {
+      return new Set(["00","11","22","33","44","55","66","77","88","99"]);
+    }
+
+    function getShioNumbers(shio) {
+      const nums = [];
+      const base = shio === 12 ? 0 : shio;
+      for (let i = 0; i < 9; i++) {
+        let num = base + i * 12;
+        if (num > 99) break;
+        nums.push(num.toString().padStart(2, '0'));
+      }
+      return nums;
+    }
+
+    function parseRange(rangeStr) {
+      const clean = rangeStr.trim();
+      if (!clean.includes('-')) return [];
+      const [start, end] = clean.split('-').map(Number);
+      if (isNaN(start) || isNaN(end)) return [];
+      const result = [];
+      for (let i = Math.max(0, start); i <= Math.min(99, end); i++) {
+        result.push(i.toString().padStart(2, '0'));
+      }
+      return result;
+    }
+
+    function parseShioParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .map(s => parseInt(s, 10))
+                   .filter(n => !isNaN(n) && n >= 1 && n <= 12);
+    }
+
+    function parseDigitParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .join('')
+                   .split('')
+                   .filter(d => d >= '0' && d <= '9');
+    }
+
+    function parseDasarParts(input) {
+      if (!input.trim()) return [];
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+                   .filter(s => s !== '')
+                   .map(s => parseInt(s, 10))
+                   .filter(n => !isNaN(n) && n >= 1 && n <= 9);
+    }
+
+    function parse2DLemah(input) {
+      if (!input.trim()) return new Set();
+      const items = input.split('/').map(s => s.trim());
+      const valid2D = [];
+      for (const item of items) {
+        if (/^\d{2}$/.test(item)) {
+          valid2D.push(item);
+        }
+      }
+      return new Set(valid2D);
+    }
+
+    function copyToClipboard(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+
+    function showMessage(el, text, isError = false) {
+      el.textContent = text;
+      el.className = isError ? 'status error' : 'status success';
+      setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 3000);
+    }
+
+    // === LOGIKA INTI: GENERATE PER PANEL ===
+    function generateSaringan(inputs) {
+      const {
+        A_input, B_input, C_input, D_input, E_input, F_input, G_input
+      } = inputs;
+
+      const twinSet = getTwinNumbers();
+
+      // B. Ekor Lemah
+      const ekorList = parseDigitParts(B_input);
+      const ekorLemahSet = new Set();
+      ekorList.forEach(d => { for (let i = 0; i <= 9; i++) ekorLemahSet.add(i + '' + d); });
+
+      // C. Kepala Lemah
+      const kepalaList = parseDigitParts(C_input);
+      const kepalaLemahSet = new Set();
+      kepalaList.forEach(d => { for (let i = 0; i <= 9; i++) kepalaLemahSet.add(d + '' + i); });
+
+      // D. Jarak Lemah
+      const jarakLemahSet = new Set(parseRange(D_input));
+
+      // E. Shio Lemah
+      const shioList = parseShioParts(E_input);
+      const shioLemahSet = new Set();
+      shioList.forEach(shio => { getShioNumbers(shio).forEach(num => shioLemahSet.add(num)); });
+
+      // F. Dasar Lemah
+      const dasarList = parseDasarParts(F_input);
+      const dasarLemahSet = new Set();
+      for (let i = 0; i <= 99; i++) {
+        const num = i.toString().padStart(2, '0');
+        const dasar = hitungDasar2D_2digit(num);
+        if (dasarList.includes(dasar)) {
+          dasarLemahSet.add(num);
+        }
+      }
+
+      // G. 2D Lemah
+      const duaDLemahSet = parse2DLemah(G_input);
+
+      // A. Angka Kontrol
+      let versions = [];
+      if (A_input.trim()) {
+        versions = A_input.split('/').map(v => v.trim().replace(/\D/g, '')).filter(v => v.length > 0);
+      }
+      const versionDigitSets = versions.map(ver => new Set(ver.split('')));
+
+      // HITUNG HIT
+      const hitCount = {};
+      const allNumbers = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
+
+      for (const num of allNumbers) {
+        let count = 0;
+        if (ekorLemahSet.has(num)) count++;
+        if (kepalaLemahSet.has(num)) count++;
+        if (jarakLemahSet.has(num)) count++;
+        if (shioLemahSet.has(num)) count++;
+        if (dasarLemahSet.has(num)) count++;
+        if (duaDLemahSet.has(num)) count++;
+        for (const digitSet of versionDigitSets) {
+          if (!digitSet.has(num[0]) && !digitSet.has(num[1])) count++;
+        }
+        hitCount[num] = count;
+      }
+
+      // KLASIFIKASI
+      const angkaBersih = [];
+      const angkaKhusus = [];
+      const outGroups = {};
+
+      for (const num of allNumbers) {
+        const count = hitCount[num];
+        if (twinSet.has(num)) {
+          angkaKhusus.push(num);
+        } else {
+          if (count === 0) {
+            angkaBersih.push(num);
+          } else {
+            if (!outGroups[count]) outGroups[count] = [];
+            outGroups[count].push(num);
+          }
+        }
+      }
+
+      return { angkaBersih, angkaKhusus, outGroups };
+    }
+
+    // === RENDER PANEL ===
+    function createPanel(market = 'cambodia') {
+      panelCount++;
+      const panelId = `panel-${panelCount}`;
+      const el = document.createElement('div');
+      el.className = 'saringan-panel';
+      el.id = panelId;
+
+      el.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">Saringan ${panelCount}</div>
+          <select class="market-select">
+            ${MARKETS.map(m => `<option value="${m}" ${m === market ? 'selected' : ''}>${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>A. Angka Kontrol (pisah versi dengan /)</label>
+          <input type="text" data-field="A" placeholder="Contoh: 0123456 atau 1234/789/1780">
+        </div>
+        <div class="form-group">
+          <label>B. Ekor Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="B" placeholder="Contoh: 6 atau 6/7">
+        </div>
+        <div class="form-group">
+          <label>C. Kepala Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="C" placeholder="Contoh: 5 atau 2/5">
+        </div>
+        <div class="form-group">
+          <label>D. Jarak Lemah</label>
+          <input type="text" data-field="D" placeholder="Contoh: 26-58">
+        </div>
+        <div class="form-group">
+          <label>E. Shio Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="E" placeholder="Contoh: 8 atau 8/9">
+        </div>
+        <div class="form-group">
+          <label>F. Dasar Lemah (pisah dengan / jika >1)</label>
+          <input type="text" data-field="F" placeholder="Contoh: 2 atau 2/5/7">
+        </div>
+        <div class="form-group">
+          <label>G. 2D Lemah (pisah dengan /)</label>
+          <input type="text" data-field="G" placeholder="Contoh: 35/27/59">
+        </div>
+
+        <div class="btn-group">
+          <button class="generateBtn" onclick="window.handleGenerate('${panelId}')">Generate</button>
+          <button class="saveBtn" onclick="window.handleSave('${panelId}')">Simpan</button>
+          <button class="clearBtn" onclick="window.handleClear('${panelId}')">Hapus</button>
+        </div>
+        <div class="status" id="status-${panelId}"></div>
+        <div id="output-${panelId}"></div>
+      `;
+
+      const marketSelect = el.querySelector('.market-select');
+      marketSelect.onchange = () => {
+        const newMarket = marketSelect.value;
+        const oldKey = [...allPanels.keys()].find(k => allPanels.get(k).el.id === panelId);
+        if (oldKey && oldKey !== newMarket) {
+          const data = allPanels.get(oldKey);
+          allPanels.delete(oldKey);
+          allPanels.set(newMarket, data);
+          loadFromFirebase(newMarket, panelId);
+        }
+      };
+
+      document.getElementById('panels-container').appendChild(el);
+      allPanels.set(market, { el, panelId });
+      loadFromFirebase(market, panelId);
+    }
+
+    // === FIREBASE: LOAD & SAVE PER MARKET (PATH: rumah9) ===
+    async function loadFromFirebase(market, panelId) {
+      try {
+        const { ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+        const snapshot = await get(ref(window.db, `rumah9/${market}`)); // ✅ DIPERBAIKI
+        const data = snapshot.val();
+        if (data) {
+          const fields = ['A','B','C','D','E','F','G'];
+          fields.forEach(f => {
+            const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+            if (input) input.value = data[f] || '';
+          });
+          setTimeout(() => {
+            const inputs = getInputs(panelId);
+            const result = generateSaringan(inputs);
+            renderOutput(panelId, result);
+          }, 100);
+        }
+      } catch (e) {
+        console.warn("Gagal load dari Firebase untuk", market, e);
+      }
+    }
+
+    function getInputs(panelId) {
+      const getVal = (field) => document.querySelector(`#${panelId} [data-field="${field}"]`)?.value || '';
+      return {
+        A_input: getVal('A'),
+        B_input: getVal('B'),
+        C_input: getVal('C'),
+        D_input: getVal('D'),
+        E_input: getVal('E'),
+        F_input: getVal('F'),
+        G_input: getVal('G')
+      };
+    }
+
+    function renderOutput(panelId, result) {
+      const { angkaBersih, angkaKhusus, outGroups } = result;
+      let html = '';
+
+      // --- Bagian utama: Bersih, Khusus, Out 1x, Out 2x, dll. ---
+      const out1x = outGroups[1] || [];
+
+      // Angka Bersih
+      angkaBersih.sort();
+      const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
+      html += `<div class="section">
+        <div class="title">✅ Angka Bersih (${angkaBersih.length} lines)</div>
+        <div class="result-box">
+          <div class="result">${bersihText}#</div>
+          <button class="copy-btn" data-copy="${bersihText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
+        </div>
+      </div>`;
+
+      // Angka Khusus
+      angkaKhusus.sort();
+      const khususText = angkaKhusus.length ? angkaKhusus.join('*') : '-';
+      html += `<div class="section">
+        <div class="title">🌟 Angka Khusus (${angkaKhusus.length} lines)</div>
+        <div class="result-box">
+          <div class="result">${khususText}#</div>
+          <button class="copy-btn" data-copy="${khususText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
+        </div>
+      </div>`;
+
+      // Out 1x
+      out1x.sort();
+      const out1xText = out1x.length ? out1x.join('*') : '-';
+      html += `<div class="section">
+        <div class="title">⚠️ Out 1x (${out1x.length} lines)</div>
+        <div class="result-box">
+          <div class="result">${out1xText}#</div>
+          <button class="copy-btn" data-copy="${out1xText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
+        </div>
+      </div>`;
+
+      // Out 2x, 3x, ...
+      const maxHit = Math.max(...Object.keys(outGroups).map(Number).filter(k => k !== 1), 0);
+      for (let hit = 2; hit <= maxHit; hit++) {
+        const list = outGroups[hit] || [];
+        if (list.length === 0) continue;
+        list.sort();
+        const text = list.join('*') + '#';
+        html += `<div class="section">
+          <div class="title">⚠️ Out ${hit}x (${list.length} lines)</div>
+          <div class="result-box">
+            <div class="result">${text}</div>
+            <button class="copy-btn" data-copy="${text}" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
+          </div>
+        </div>`;
+      }
+
+      // --- RANGKUMAN ---
+      const summaryText = bersihText + '#' + '+' + out1xText + '#' + '+' + khususText + '#';
+      html += `<div class="section">
+        <div class="title">📋 Rangkuman</div>
+        <div class="result-box">
+          <div class="result">${summaryText}</div>
+          <button class="copy-btn" data-copy="${summaryText}" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
+        </div>
+      </div>`;
+
+      document.getElementById(`output-${panelId}`).innerHTML = html;
+    }
+
+    // === HANDLER GLOBAL ===
+    window.copyToClipboard = copyToClipboard;
+
+    window.handleGenerate = (panelId) => {
+      const inputs = getInputs(panelId);
+      const result = generateSaringan(inputs);
+      renderOutput(panelId, result);
+    };
+
+    window.handleSave = async (panelId) => {
+      const market = document.querySelector(`#${panelId} .market-select`).value;
+      const inputs = getInputs(panelId);
+      const data = {
+        A: inputs.A_input,
+        B: inputs.B_input,
+        C: inputs.C_input,
+        D: inputs.D_input,
+        E: inputs.E_input,
+        F: inputs.F_input,
+        G: inputs.G_input,
+        timestamp: Date.now()
+      };
+
+      try {
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "Menyimpan...");
+        const { ref, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+        await set(ref(window.db, `rumah9/${market}`), data); // ✅ DIPERBAIKI
+        showMessage(statusEl, "✅ Tersimpan!", false);
+      } catch (e) {
+        console.error(e);
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "❌ Gagal simpan", true);
+      }
+    };
+
+    window.handleClear = async (panelId) => {
+      const fields = ['A','B','C','D','E','F','G'];
+      fields.forEach(f => {
+        const input = document.querySelector(`#${panelId} [data-field="${f}"]`);
+        if (input) input.value = '';
+      });
+      document.getElementById(`output-${panelId}`).innerHTML = '';
+
+      const market = document.querySelector(`#${panelId} .market-select`).value;
+      try {
+        const { ref, remove } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+        await remove(ref(window.db, `rumah9/${market}`)); // ✅ DIPERBAIKI
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "✅ Data di cloud dihapus", false);
+      } catch (e) {
+        const statusEl = document.getElementById(`status-${panelId}`);
+        showMessage(statusEl, "ℹ️ Input lokal dihapus", false);
+      }
+    };
+
+    // === INIT ===
+    document.getElementById('cloneBtn').onclick = () => {
+      if (allPanels.size >= MARKETS.length) {
+        alert("Maksimal jumlah market telah tercapai.");
+        return;
+      }
+      const used = new Set(allPanels.keys());
+      const nextMarket = MARKETS.find(m => !used.has(m)) || 'cambodia';
+      createPanel(nextMarket);
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const init = () => {
+        if (window.db) {
+          createPanel('cambodia');
+        } else {
+          setTimeout(init, 100);
+        }
+      };
+      init();
+    });
+  </script>
+</body>
+</html>
