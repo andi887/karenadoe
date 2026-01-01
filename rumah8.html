@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalkulator Akko & Andi - Sliding Format</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.3em;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+      font-family: monospace;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .buttons button {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #loadBtn { background: #fbbc04; color: #202124; }
+    #saveBtn { background: #34a853; color: white; }
+    #copySummaryBtn { background: #4285f4; color: white; }
+
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .result-box {
+      background: #f9f9f9;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      border-left: 4px solid #d32f2f;
+    }
+
+    .result-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .result-box .original {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .result-box .formatted {
+      font-weight: bold;
+      color: #d32f2f;
+      font-family: monospace;
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      font-weight: bold;
+      display: none;
+    }
+    .status.success { background: #e6f4ea; color: #107c10; display: block; }
+    .status.error { background: #fce8e6; color: #d93025; display: block; }
+
+    .back-home {
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .back-home a {
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Kalkulator Akko & Andi<br><small>Format: 93*31*15*50*05</small></h2>
+
+    <!-- Pilih Market -->
+    <div class="input-group">
+      <label for="market">Pilih Market:</label>
+      <select id="market">
+        <option value="">-- Pilih Market --</option>
+        <option value="Cambodia">Cambodia</option>
+        <option value="Sidney">Sidney</option>
+        <option value="China">China</option>
+        <option value="Japan">Japan</option>
+        <option value="SGP">SGP</option>
+        <option value="Taiwan">Taiwan</option>
+        <option value="Hongkong">Hongkong</option>
+        <option value="Nusa">Nusa</option>
+      </select>
+    </div>
+
+    <!-- Input Result -->
+    <div class="input-group">
+      <label for="inputResult">Masukkan 4 digit (misal: 1885):</label>
+      <input type="text" id="inputResult" maxlength="4" placeholder="Contoh: 1885" />
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="buttons">
+      <button id="loadBtn">↺ Muat dari Rumah1</button>
+      <button id="saveBtn">💾 Simpan ke Cloud</button>
+    </div>
+
+    <!-- Hasil Perhitungan -->
+    <div class="results">
+      <div class="result-box">
+        <strong>AB akko CD</strong>
+        <div class="original">Asli: <span id="raw1">—</span></div>
+        <div class="formatted" id="formatted1">—</div>
+      </div>
+      <div class="result-box">
+        <strong>CD andi AB</strong>
+        <div class="original">Asli: <span id="raw2">—</span></div>
+        <div class="formatted" id="formatted2">—</div>
+      </div>
+    </div>
+
+    <!-- Tombol Rangkuman + Salin -->
+    <div class="buttons">
+      <button id="copySummaryBtn">📋 Rangkuman Hasil</button>
+    </div>
+
+    <!-- Status Simpan -->
+    <div id="saveStatus" class="status"></div>
+
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    // 🔐 Firebase Config - Proyek SABAR
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+    const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
+
+    // ─── FUNGSI BANTU ───────────────────────────────────────
+    function degToRad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    function formatDecimalToSlidingPairs(num) {
+      const str = num.toString();
+      const decimalPart = str.includes('.') ? str.split('.')[1] : '0';
+      let digits = (decimalPart + '000000').substring(0, 6);
+      const pairs = [];
+      for (let i = 0; i < 5; i++) {
+        if (i + 1 < digits.length) {
+          pairs.push(digits[i] + digits[i + 1]);
+        } else {
+          pairs.push('00');
+        }
+      }
+      return pairs.join('*');
+    }
+
+    // ─── MUAT DARI RUMAH1 (MEKANISME SAMA SEPERTI RUMAH2) ───
+    async function loadFromRumah1(market) {
+      if (!market || !MARKETS.includes(market)) {
+        alert("Pilih market terlebih dahulu!");
+        return;
+      }
+
+      try {
+        const snapshot = await database.ref(`rumah1/${market}`)
+          .orderByChild("0")
+          .limitToLast(1)
+          .once("value");
+
+        if (!snapshot.exists()) {
+          alert(`Tidak ada data untuk ${market} di rumah1.`);
+          return;
+        }
+
+        const data = snapshot.val();
+        const keys = Object.keys(data).sort(); // urutkan key Firebase
+        const lastKey = keys[keys.length - 1];
+        const entry = data[lastKey];
+
+        if (!Array.isArray(entry) || entry.length < 2) {
+          alert("Format data di rumah1 tidak valid (harus array).");
+          return;
+        }
+
+        const resValue = (entry[1] || "").toString().trim();
+        if (!/^\d{4}$/.test(resValue)) {
+          alert(`Result tidak valid: "${resValue}" (harus 4 digit angka).`);
+          return;
+        }
+
+        document.getElementById('inputResult').value = resValue;
+        document.getElementById('market').value = market;
+        localStorage.setItem('lastMarket', market);
+        calculate();
+
+      } catch (err) {
+        console.error("Error saat muat dari rumah1:", err);
+        alert("Gagal memuat data. Cek koneksi atau struktur data.");
+      }
+    }
+
+    // ─── SIMPAN KE CLOUD ────────────────────────────────────
+    function saveToCloud() {
+      const market = document.getElementById('market').value;
+      const input = document.getElementById('inputResult').value.trim();
+      const fmt1 = document.getElementById('formatted1').textContent;
+      const fmt2 = document.getElementById('formatted2').textContent;
+      const statusEl = document.getElementById('saveStatus');
+
+      if (!market || !MARKETS.includes(market)) {
+        statusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        return;
+      }
+
+      if (fmt1 === '—' || fmt2 === '—') {
+        statusEl.textContent = "⚠️ Hitung hasil terlebih dahulu.";
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        return;
+      }
+
+      const data = {
+        input: input,
+        ab_akko_cd: fmt1,
+        cd_andi_ab: fmt2,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      database.ref(`rumah8/${market}`).push(data)
+        .then(() => {
+          statusEl.textContent = "✅ Berhasil disimpan ke cloud!";
+          statusEl.className = "status success";
+          setTimeout(() => statusEl.style.display = "none", 3000);
+        })
+        .catch(err => {
+          statusEl.textContent = "❌ Gagal simpan: " + (err.message || "Cek koneksi");
+          statusEl.className = "status error";
+          statusEl.style.display = "block";
+        });
+    }
+
+    // ─── SALIN RINGKASAN (HANYA ANGKA MERAH, DIPISAH *) ─────
+    function copySummary() {
+      const fmt1 = document.getElementById('formatted1').textContent;
+      const fmt2 = document.getElementById('formatted2').textContent;
+
+      if (fmt1 === '—' || fmt2 === '—') {
+        alert("Hitung hasil terlebih dahulu.");
+        return;
+      }
+
+      const summary = `${fmt1}*${fmt2}`;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(summary).then(() => {
+          const btn = document.getElementById('copySummaryBtn');
+          const original = btn.textContent;
+          btn.textContent = '✅ Tersalin!';
+          setTimeout(() => btn.textContent = original, 1500);
+        }).catch(() => fallbackCopy(summary));
+      } else {
+        fallbackCopy(summary);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('✅ Tersalin!');
+    }
+
+    // ─── HITUNG ─────────────────────────────────────────────
+    function calculate() {
+      const input = document.getElementById('inputResult').value.trim();
+      const raw1El = document.getElementById('raw1');
+      const raw2El = document.getElementById('raw2');
+      const fmt1El = document.getElementById('formatted1');
+      const fmt2El = document.getElementById('formatted2');
+
+      raw1El.textContent = '—';
+      raw2El.textContent = '—';
+      fmt1El.textContent = '—';
+      fmt2El.textContent = '—';
+
+      if (!/^\d{4}$/.test(input)) return;
+
+      const AB = parseInt(input.substring(0, 2), 10);
+      const CD = parseInt(input.substring(2, 4), 10);
+
+      const val1 = AB * Math.sin(degToRad(CD));
+      const val2 = CD * Math.cos(degToRad(AB));
+
+      raw1El.textContent = val1.toFixed(10);
+      raw2El.textContent = val2.toFixed(10);
+
+      fmt1El.textContent = formatDecimalToSlidingPairs(val1);
+      fmt2El.textContent = formatDecimalToSlidingPairs(val2);
+    }
+
+    // ─── EVENT LISTENERS ────────────────────────────────────
+    document.getElementById('inputResult').addEventListener('input', calculate);
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      loadFromRumah1(document.getElementById('market').value);
+    });
+    document.getElementById('saveBtn').addEventListener('click', saveToCloud);
+    document.getElementById('copySummaryBtn').addEventListener('click', copySummary);
+
+    // ─── INISIALISASI ───────────────────────────────────────
+    window.addEventListener('load', () => {
+      const lastMarket = localStorage.getItem('lastMarket');
+      if (lastMarket && MARKETS.includes(lastMarket)) {
+        document.getElementById('market').value = lastMarket;
+      }
+    });
+  </script>
+</body>
+</html>
