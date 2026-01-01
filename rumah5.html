@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediksi Kepala 4D - 7 Kandidat</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --danger: #ef4444;
+      --ok: #10b981;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0 0 6px 0;
+      letter-spacing: 0.2px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-secondary {
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--muted);
+    }
+    .output {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #0c1220;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .digit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #12192a, #0d1424);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+    .score {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      background: rgba(255,255,255,0.03);
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .warn {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    .ok {
+      color: var(--ok);
+      font-weight: 600;
+    }
+    .footer {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .mini {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 36px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <header>
+      <h1>Prediksi kepala 4D - 7 Kandidat</h1>
+      <div class="sub">Pilih market, lalu masukkan 5 result 4D (tertua → terbaru). Sistem menghitung 7 kandidat kepala berdasarkan 6 sinyal pola.</div>
+      <span class="tag">Eksplorasi pola matematis — bukan saran taruhan.</span>
+    </header>
+
+    <div class="card">
+      <div style="margin-bottom: 16px;">
+        <label for="market">Pilih Market</label>
+        <select id="market">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
+        </select>
+      </div>
+
+      <div class="grid">
+        <div><label for="r1">Result 1 (tertua)</label><input id="r1" type="text" placeholder="contoh: 0145" /></div>
+        <div><label for="r2">Result 2</label><input id="r2" type="text" placeholder="contoh: 1965" /></div>
+        <div><label for="r3">Result 3</label><input id="r3" type="text" placeholder="contoh: 9677" /></div>
+        <div><label for="r4">Result 4</label><input id="r4" type="text" placeholder="contoh: 8990" /></div>
+        <div><label for="r5">Result 5 (terbaru)</label><input id="r5" type="text" placeholder="contoh: 0870" /></div>
+      </div>
+      <div class="btn-row">
+        <button id="btnCalc">Hitung 7 kandidat</button>
+        <button class="btn-secondary" id="btnSample">Isi contoh</button>
+        <button class="btn-secondary" id="btnClear">Bersihkan</button>
+        <button class="btn-secondary" id="btnClone">Kloning</button>
+        <button id="btnSave" style="background: linear-gradient(90deg, #10b981, #34d399); color: #0b1020;">Simpan ke Cloud</button>
+        <button class="btn-secondary" id="btnDelete" style="background: #0c1220; border-color: var(--danger); color: var(--danger);">Hapus dari Cloud</button>
+        <button class="btn-secondary" id="btnLoadRumah1">Muat dari Rumah1</button>
+      </div>
+    </div>
+
+    <div id="cloneContainer" class="card" style="display: none;">
+      <h3 style="margin-top: 0;">Klon Hasil</h3>
+      <div class="grid">
+        <div><label>Result 1 (klon)</label><input id="r1a" type="text" placeholder="0000" readonly /></div>
+        <div><label>Result 2 (klon)</label><input id="r2a" type="text" placeholder="0000" readonly /></div>
+        <div><label>Result 3 (klon)</label><input id="r3a" type="text" placeholder="0000" readonly /></div>
+        <div><label>Result 4 (klon)</label><input id="r4a" type="text" placeholder="0000" readonly /></div>
+        <div><label>Result 5 (klon)</label><input id="r5a" type="text" placeholder="0000" readonly /></div>
+      </div>
+      <div class="btn-row" style="margin-top: 12px;">
+        <button class="btn-secondary" id="btnDeleteClone">Hapus Klon</button>
+      </div>
+    </div>
+
+    <div id="warn" class="mini warn" style="display:none;">Periksa input: 4 digit angka & market harus dipilih.</div>
+
+    <div id="out" class="output" style="display:none;">
+      <div class="card">
+        <h2 style="margin-top:0;">Tujuh kandidat kepala (<span id="marketOut"></span>)</h2>
+        <div id="top7" class="chips"></div>
+        <div class="footer">Berdasarkan 6 sinyal pola. Market: <span id="marketFooter"></span></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">Detail perhitungan</h3>
+        <div class="flex">
+          <div>
+            <div class="mini">Kepala (digit ke-3)</div>
+            <div id="heads" class="chips"></div>
+          </div>
+          <div>
+            <div class="mini">Selisih (mod 10)</div>
+            <div id="deltas" class="chips"></div>
+          </div>
+          <div>
+            <div class="mini">Langkah dominan s*</div>
+            <div class="pill"><span class="digit" id="sstarDigit">-</span><span class="score">ritme</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">Skor tiap digit (0–9)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Digit</th>
+              <th>Skor Gabungan</th>
+            </tr>
+          </thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Hasil acak dan independen. Gunakan untuk eksplorasi pola saja.</div>
+  </div>
+
+  <!-- 🔥 Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    // 🔐 Konfigurasi Firebase — proyek SABAR (sama dengan rumah1)
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+    let currentDataId = null;
+    let selectedMarket = null;
+
+    (function(){
+      const id = s => document.getElementById(s);
+      const inputs = ['r1','r2','r3','r4','r5'].map(id);
+      const cloneInputs = ['r1a','r2a','r3a','r4a','r5a'].map(id);
+      const marketSelect = id('market');
+      const btnCalc = id('btnCalc');
+      const btnSample = id('btnSample');
+      const btnClear = id('btnClear');
+      const btnClone = id('btnClone');
+      const btnDeleteClone = id('btnDeleteClone');
+      const btnSave = id('btnSave');
+      const btnDelete = id('btnDelete');
+      const btnLoadRumah1 = id('btnLoadRumah1');
+      const warn = id('warn');
+      const out = id('out');
+      const headsEl = id('heads');
+      const deltasEl = id('deltas');
+      const sstarDigit = id('sstarDigit');
+      const top7El = id('top7');
+      const tbl = id('tbl');
+      const cloneContainer = id('cloneContainer');
+      const marketOut = id('marketOut');
+      const marketFooter = id('marketFooter');
+
+      const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
+
+      // === Fungsi logika perhitungan (tidak diubah) ===
+      function isValid4D(str){
+        return typeof str === 'string' && str.length === 4 && /^[0-9]{4}$/.test(str);
+      }
+      function parseInputs(){
+        const vals = inputs.map(i => i.value.trim());
+        if(vals.some(v => !isValid4D(v))) return null;
+        return vals;
+      }
+      function getHeads(results){
+        return results.map(r => Number(r[2]));
+      }
+      function weightedFrequency(heads){
+        const w = [1,2,3,4,5];
+        const score = Array(10).fill(0);
+        heads.forEach((h, idx) => { score[h] += w[idx]; });
+        const total = score.reduce((a,b)=>a+b,0);
+        const pfreq = score.map(s => total ? s/total : 0);
+        return {score, pfreq, total};
+      }
+      function markovFromLast(heads){
+        const trans = Array.from({length:10}, ()=>Array(10).fill(0));
+        for(let t=0;t<heads.length-1;t++){
+          trans[heads[t]][heads[t+1]] += 1;
+        }
+        const last = heads[heads.length-1];
+        const rowSum = trans[last].reduce((a,b)=>a+b,0);
+        const p = Array(10).fill(0).map((_,j)=> (trans[last][j]+1)/((rowSum)+10));
+        return {last, trans, p};
+      }
+      function rhythm(heads){
+        const deltas = [];
+        for(let t=0;t<heads.length-1;t++){
+          deltas.push( (heads[t+1]-heads[t]+10)%10 );
+        }
+        const w = [1,2,3,4];
+        const W = Array(10).fill(0);
+        deltas.forEach((d, idx)=>{ W[d] += w[idx]; });
+        let sstar = 0, best = -Infinity;
+        for(let s=0;s<10;s++){
+          if(W[s] > best){ best = W[s]; sstar = s; }
+        }
+        const candidate = (heads[heads.length-1] + sstar) % 10;
+        const pritme = Array(10).fill(0); pritme[candidate] = 1;
+        return {deltas, W, sstar, candidate, pritme};
+      }
+      function medianTrend(heads) {
+        const sorted = [...heads].sort((a,b)=>a-b);
+        const median = sorted[2];
+        const score = Array(10).fill(0);
+        [median, (median-1+10)%10, (median+1)%10].forEach(d => {
+          score[d] = 1;
+        });
+        const total = score.reduce((a,b)=>a+b,0);
+        return score.map(s => total ? s/total : 0);
+      }
+      function missingDigits(heads) {
+        const seen = new Set(heads);
+        const missing = [];
+        for (let d = 0; d < 10; d++) {
+          if (!seen.has(d)) missing.push(d);
+        }
+        const top2 = missing.slice(0, 2);
+        const score = Array(10).fill(0);
+        top2.forEach(d => score[d] = 1);
+        const total = score.reduce((a,b)=>a+b,0);
+        return score.map(s => total ? s/total : 0);
+      }
+      function rawFrequency(heads) {
+        const count = Array(10).fill(0);
+        heads.forEach(h => count[h]++);
+        const total = count.reduce((a,b)=>a+b,0);
+        return count.map(c => total ? c/total : 0);
+      }
+      function combine(pfreq, pmarkov, pritme, pmedian, pmissing, praw) {
+        return Array(10).fill(0).map((_,d)=>
+          0.35 * pfreq[d] +
+          0.30 * pmarkov[d] +
+          0.10 * pritme[d] +
+          0.10 * pmedian[d] +
+          0.08 * pmissing[d] +
+          0.07 * praw[d]
+        );
+      }
+      function formatDigit(d){
+        const span = document.createElement('span');
+        span.className = 'digit';
+        span.textContent = d;
+        return span;
+      }
+      function chip(label, value){
+        const div = document.createElement('div');
+        div.className = 'pill';
+        const dig = document.createElement('span');
+        dig.className = 'digit';
+        dig.textContent = value;
+        const lab = document.createElement('span');
+        lab.className = 'score';
+        lab.textContent = label;
+        div.appendChild(dig);
+        div.appendChild(lab);
+        return div;
+      }
+
+      // === Fungsi Baru: Muat 5 result terbaru dari rumah1/{market} ===
+      async function loadResultsFromRumah1(market) {
+        if (!market || !MARKETS.includes(market)) return;
+
+        try {
+          const snapshot = await database.ref(`rumah1/${market}`)
+            .orderByChild("tgl") // atau "timestamp" jika pakai timestamp
+            .limitToLast(5)
+            .once("value");
+
+          if (!snapshot.exists()) {
+            alert(`ℹ️ Belum ada data di rumah1 untuk market ${market}.`);
+            return;
+          }
+
+          const data = snapshot.val();
+          const entries = Object.values(data);
+          // Urutkan dari tertua ke terbaru (asumsi `tgl` format YYYY-MM-DD atau timestamp)
+          entries.sort((a, b) => {
+            if (typeof a.tgl === 'string' && typeof b.tgl === 'string') {
+              return new Date(a.tgl) - new Date(b.tgl);
+            }
+            return (a.tgl || 0) - (b.tgl || 0);
+          });
+
+          // Ambil 5 terbaru → kita perlu 5 terakhir, tapi tampilkan dari tertua → terbaru
+          const last5 = entries.slice(-5);
+          if (last5.length < 5) {
+            alert(`ℹ️ Hanya tersedia ${last5.length} data di rumah1 untuk ${market} (butuh 5).`);
+            return;
+          }
+
+          // Ekstrak kolom 'res' (harus 4 digit)
+          const results = last5.map(e => (e.res || "").toString().padStart(4, '0'));
+          if (results.some(r => !isValid4D(r))) {
+            alert("⚠️ Beberapa data 'res' di rumah1 tidak valid (bukan 4 digit).");
+            return;
+          }
+
+          // Isi input dari tertua → terbaru
+          inputs.forEach((input, i) => {
+            input.value = results[i] || '';
+          });
+
+          // Auto-hitung opsional? Kita biarkan user tekan "Hitung" sendiri.
+          selectedMarket = market;
+          marketSelect.value = market;
+          localStorage.setItem('lastMarket', market);
+
+        } catch (err) {
+          console.error("Gagal muat data dari rumah1:", err);
+          alert("❌ Gagal memuat data dari rumah1: " + (err.message || "Cek koneksi"));
+        }
+      }
+
+      // === Fungsi Simpan dan Hapus (tidak diubah) ===
+      btnSave.addEventListener('click', async () => {
+        const market = marketSelect.value;
+        if (!market || !MARKETS.includes(market)) {
+          alert("Pilih market terlebih dahulu!");
+          return;
+        }
+        const results = parseInputs();
+        if (!results) {
+          alert("Perbaiki input terlebih dahulu!");
+          return;
+        }
+        const heads = getHeads(results);
+        const freq = weightedFrequency(heads);
+        const mk = markovFromLast(heads);
+        const rh = rhythm(heads);
+        const pmedian = medianTrend(heads);
+        const pmissing = missingDigits(heads);
+        const praw = rawFrequency(heads);
+        const score = combine(freq.pfreq, mk.p, rh.pritme, pmedian, pmissing, praw);
+        const top7 = Array.from({length:10}, (_,d)=>d).sort((a,b)=> score[b]-score[a]).slice(0,7);
+
+        const dataToSave = {
+          inputs: results,
+          heads: heads,
+          top7: top7,
+          scores: score,
+          market: market,
+          timestamp: firebase.database.ServerValue.TIMESTAMP,
+          type: "prediksi-kepala-7"
+        };
+
+        try {
+          const ref = database.ref(`prediksi-kepala-7/${market}`).push(dataToSave);
+          currentDataId = ref.key;
+          selectedMarket = market;
+          localStorage.setItem('lastMarket', market);
+          alert(`✅ Data untuk market "${market}" berhasil disimpan!`);
+        } catch (err) {
+          console.error("Firebase save error:", err);
+          alert("❌ Gagal menyimpan: " + (err.message || "Cek koneksi"));
+        }
+      });
+
+      btnDelete.addEventListener('click', async () => {
+        if (!currentDataId || !selectedMarket) {
+          alert("Tidak ada data yang disimpan untuk dihapus.");
+          return;
+        }
+        if (!confirm(`Hapus data untuk market "${selectedMarket}"?`)) return;
+
+        try {
+          await database.ref(`prediksi-kepala-7/${selectedMarket}/${currentDataId}`).remove();
+          currentDataId = null;
+          selectedMarket = null;
+          localStorage.removeItem('lastMarket');
+          alert("🗑️ Data dihapus dari cloud.");
+        } catch (err) {
+          console.error("Firebase delete error:", err);
+          alert("❌ Gagal menghapus: " + (err.message || "Cek koneksi"));
+        }
+      });
+
+      // === Fungsi Render (tidak diubah) ===
+      function render(results, heads, freq, mk, rh, pmedian, pmissing, praw, score, market){
+        warn.style.display = 'none';
+        out.style.display = 'grid';
+        marketOut.textContent = market;
+        marketFooter.textContent = market;
+
+        headsEl.innerHTML = '';
+        heads.forEach((h, idx)=>{
+          const div = chip(`H${idx+1}`, h);
+          headsEl.appendChild(div);
+        });
+
+        deltasEl.innerHTML = '';
+        rh.deltas.forEach((d, idx)=>{
+          const div = chip(`Δ${idx+1}`, d);
+          deltasEl.appendChild(div);
+        });
+
+        sstarDigit.textContent = rh.sstar;
+
+        tbl.innerHTML = '';
+        for(let d=0; d<10; d++){
+          const tr = document.createElement('tr');
+          const tdDigit = document.createElement('td'); tdDigit.textContent = d;
+          const tdScore = document.createElement('td'); tdScore.textContent = score[d].toFixed(4);
+          tr.append(tdDigit, tdScore);
+          tbl.appendChild(tr);
+        }
+
+        const order = Array.from({length:10}, (_,d)=>d).sort((a,b)=> score[b]-score[a]);
+        const top7 = order.slice(0,7);
+        top7El.innerHTML = '';
+        top7.forEach((d, i)=>{
+          const div = document.createElement('div');
+          div.className = 'pill';
+          const digit = formatDigit(d);
+          const lbl = document.createElement('span');
+          lbl.className = 'score';
+          lbl.textContent = `kandidat #${i+1} • skor ${score[d].toFixed(4)}`;
+          div.appendChild(digit);
+          div.appendChild(lbl);
+          top7El.appendChild(div);
+        });
+      }
+
+      // === Event Listeners Asli ===
+      btnCalc.addEventListener('click', ()=>{
+        const market = marketSelect.value;
+        if (!market || !MARKETS.includes(market)) {
+          warn.textContent = "Pilih market terlebih dahulu.";
+          warn.style.display = 'block';
+          out.style.display = 'none';
+          return;
+        }
+        const results = parseInputs();
+        if(!results){
+          warn.textContent = "Input harus berupa 4 digit angka (0000–9999).";
+          warn.style.display = 'block';
+          out.style.display = 'none';
+          return;
+        }
+        const heads = getHeads(results);
+        const freq = weightedFrequency(heads);
+        const mk = markovFromLast(heads);
+        const rh = rhythm(heads);
+        const pmedian = medianTrend(heads);
+        const pmissing = missingDigits(heads);
+        const praw = rawFrequency(heads);
+        const score = combine(freq.pfreq, mk.p, rh.pritme, pmedian, pmissing, praw);
+        render(results, heads, freq, mk, rh, pmedian, pmissing, praw, score, market);
+        selectedMarket = market;
+      });
+
+      btnSample.addEventListener('click', ()=>{
+        const sample = ["0145","1965","9677","8990","0870"];
+        inputs.forEach((el, i)=> el.value = sample[i]);
+      });
+
+      btnClear.addEventListener('click', ()=>{
+        inputs.forEach(el => el.value = '');
+        cloneInputs.forEach(el => el.value = '');
+        marketSelect.value = '';
+        cloneContainer.style.display = 'none';
+        warn.style.display = 'none';
+        out.style.display = 'none';
+        tbl.innerHTML = '';
+        headsEl.innerHTML = '';
+        deltasEl.innerHTML = '';
+        top7El.innerHTML = '';
+        sstarDigit.textContent = '-';
+        currentDataId = null;
+        selectedMarket = null;
+        localStorage.removeItem('lastMarket');
+      });
+
+      btnClone.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) {
+          alert("Pilih market terlebih dahulu!");
+          return;
+        }
+        const vals = inputs.map(i => i.value);
+        if (vals.some(v => !isValid4D(v))) {
+          alert("Isi semua input dengan 4 digit angka!");
+          return;
+        }
+        cloneInputs.forEach((el, i) => el.value = vals[i]);
+        cloneContainer.style.display = 'block';
+      });
+
+      btnDeleteClone.addEventListener('click', () => {
+        cloneInputs.forEach(el => el.value = '');
+        cloneContainer.style.display = 'none';
+      });
+
+      // === Tombol Baru: Muat dari Rumah1 ===
+      btnLoadRumah1.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) {
+          alert("Pilih market terlebih dahulu!");
+          return;
+        }
+        loadResultsFromRumah1(market);
+      });
+
+      // Auto-load market terakhir saat halaman pertama kali dibuka
+      document.addEventListener('DOMContentLoaded', () => {
+        const lastMarket = localStorage.getItem('lastMarket');
+        if (lastMarket && MARKETS.includes(lastMarket)) {
+          marketSelect.value = lastMarket;
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>
