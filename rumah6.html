@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitur 6 - Prediksi Pola & 2D</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; background: #f9f9f9; margin: 0; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { text-align: center; font-size: 1.4em; margin: 12px 0; color: #1976d2; }
+    .form-group { margin: 12px 0; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; }
+    select, textarea, button { width: 100%; padding: 10px; box-sizing: border-box; margin: 6px 0; font-size: 14px; }
+    button { background: #1976d2; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .clone-btn { background: #6c757d; }
+    .result-box { margin: 16px 0; padding: 12px; background: #f5f9ff; border-radius: 6px; }
+    .label { font-weight: bold; color: #333; margin-bottom: 6px; }
+    .value { font-family: monospace; word-break: break-all; }
+    .copy-btn { margin-top: 6px; padding: 4px 10px; background: #4caf50; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .back-home { text-align: center; margin-top: 20px; }
+    .back-home a { text-decoration: none; color: #1976d2; font-weight: bold; display: inline-block; padding: 10px 0; }
+    .block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Fitur 6 – Prediksi Pola & 2D</h2>
+    
+    <!-- Blok Analisis Utama -->
+    <div class="block" id="mainBlock">
+      <div class="form-group">
+        <label for="market">Pilih Market:</label>
+        <select id="market">
+          <option value="SGP">SGP</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="input">Masukkan 2 result 6-digit:</label>
+        <textarea id="input" placeholder="Contoh:&#10;151493&#10;348068"></textarea>
+      </div>
+      
+      <button id="predictBtn">OK</button>
+      <button class="clone-btn" onclick="cloneBlock()">+ Kloning</button>
+      
+      <div id="results" style="display:none; margin-top: 16px;"></div>
+    </div>
+
+    <!-- Blok Kloning Akan Ditambahkan di Sini -->
+    <div id="clonedBlocks"></div>
+
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <script>
+    // 🔐 GANTI DENGAN KONFIGURASI NOMOROMOSSE-MU
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "nomoromosse.firebaseapp.com",
+      databaseURL: "https://nomoromosse-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "nomoromosse",
+      storageBucket: "nomoromosse.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // === UTILITAS ===
+    const isSmall = d => d >= 0 && d <= 4;
+    const classify = (h, t) => (isSmall(h) ? 'K' : 'B') + (isSmall(t) ? 'K' : 'B');
+
+    // Generate semua 2D berdasarkan satu pola
+    function generate2DForPattern(pattern) {
+      const small = [0,1,2,3,4];
+      const big = [5,6,7,8,9];
+      const heads = pattern[0] === 'K' ? small : big;
+      const tails = pattern[1] === 'K' ? small : big;
+      let result = [];
+      for (let h of heads) {
+        for (let t of tails) {
+          result.push(`${h}${t}`);
+        }
+      }
+      return result;
+    }
+
+    // Gabungkan 2D dari beberapa pola
+    function generate2DFromPatterns(patterns) {
+      let all = new Set();
+      patterns.forEach(p => {
+        generate2DForPattern(p).forEach(num => all.add(num));
+      });
+      return Array.from(all).sort().join('*');
+    }
+
+    // Transisi: selalu kembalikan 2 pola
+    const transitionMap = {
+      'KK': ['KB', 'BK'],
+      'BB': ['KB', 'BK'],
+      'KB': ['KK', 'BB'],
+      'BK': ['KK', 'BB']
+    };
+
+    // Prediksi utama → kini kembalikan array pola
+    function runPrediction(inputText) {
+      const nums = inputText.match(/\d+/g) || [];
+      const sixes = nums.map(n => n.padStart(6, '0')).filter(n => n.length >= 6).slice(0, 2);
+      if (sixes.length !== 2) throw new Error("Butuh 2 result 6-digit.");
+
+      const pairs = [];
+      sixes.forEach(s => {
+        pairs.push(s.slice(0,2), s.slice(2,4), s.slice(4,6));
+      });
+
+      const patterns = pairs.map(p => classify(parseInt(p[0]), parseInt(p[1])));
+      const p6 = patterns[5]; // pola terakhir dari result ke-2
+
+      const predictedPatterns = transitionMap[p6] || ['KB', 'BK'];
+      const all2D = generate2DFromPatterns(predictedPatterns);
+
+      return {
+        patterns: predictedPatterns, // array: ['KB', 'BK']
+        all2D: all2D              // string: "05*06*...*94"
+      };
+    }
+
+    // Simpan ke Firebase (per market)
+    function saveToFirebase(market, inputData, resultData) {
+      db.ref(`fitur6/${market}`).set({
+        input: inputData,
+        patterns: resultData.patterns,
+        all2D: resultData.all2D,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
+
+    // Muat dari Firebase (per market)
+    function loadFromFirebase(market, callback) {
+      db.ref(`fitur6/${market}`).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) callback(data);
+        else callback(null);
+      });
+    }
+
+    // Salin dari blok tertentu
+    function copyFromBlock(btn) {
+      const target = btn.closest('.result-box').querySelector('.copy-target');
+      if (target && target.innerText) {
+        navigator.clipboard.writeText(target.innerText).then(() => {
+          const notice = document.createElement('div');
+          notice.textContent = '✅ Tersalin!';
+          notice.style.cssText = `
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #4caf50; color: white; padding: 8px 16px; border-radius: 4px;
+            font-weight: bold; z-index: 1000; box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+          `;
+          document.body.appendChild(notice);
+          setTimeout(() => document.body.removeChild(notice), 1500);
+        });
+      }
+    }
+
+    // Kloning
+    let cloneCount = 0;
+    function cloneBlock() {
+      if (cloneCount >= 3) {
+        alert("Maksimal 4 blok analisis.");
+        return;
+      }
+      const main = document.getElementById('mainBlock').cloneNode(true);
+      cloneCount++;
+      main.id = `clone-${cloneCount}`;
+      
+      const textarea = main.querySelector('textarea');
+      const select = main.querySelector('select');
+      const results = main.querySelector('#results');
+      if (textarea) textarea.value = '';
+      if (results) results.style.display = 'none';
+      if (select) select.value = 'SGP';
+      
+      // Hapus tombol kloning di klon
+      const cloneBtn = main.querySelector('.clone-btn');
+      if (cloneBtn) cloneBtn.remove();
+      
+      // Pasang ulang event
+      const predictBtn = main.querySelector('button');
+      if (predictBtn) {
+        predictBtn.textContent = "OK";
+        predictBtn.onclick = null;
+        predictBtn.addEventListener('click', () => handlePrediction(main, select.value));
+      }
+      
+      document.getElementById('clonedBlocks').appendChild(main);
+    }
+
+    // Handle prediksi per blok
+    function handlePrediction(block, market) {
+      const textarea = block.querySelector('textarea');
+      const input = textarea.value.trim();
+      if (!input) return alert("Masukkan data result.");
+      
+      try {
+        const result = runPrediction(input);
+        
+        // Bangun output HTML
+        const outputHTML = `
+          <div class="result-box">
+            <div class="label">Prediksi Pola (2D Terakhir):</div>
+            <div class="value">${result.patterns.join(', ')}</div>
+          </div>
+          <div class="result-box">
+            <div class="label">Semua 2D dengan Pola Tersebut:</div>
+            <div class="value copy-target">${result.all2D}</div>
+            <button class="copy-btn" onclick="copyFromBlock(this)">Salin Semua 2D</button>
+          </div>
+        `;
+        
+        block.querySelector('#results').innerHTML = outputHTML;
+        block.querySelector('#results').style.display = 'block';
+        
+        // Simpan ke cloud
+        saveToFirebase(market, input, result);
+        
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    // Inisialisasi
+    document.getElementById('predictBtn').addEventListener('click', () => {
+      const market = document.getElementById('market').value;
+      handlePrediction(document.getElementById('mainBlock'), market);
+    });
+
+    // Muat data saat halaman dibuka
+    window.addEventListener('load', () => {
+      const marketSelect = document.getElementById('market');
+      const currentMarket = marketSelect.value;
+      
+      loadFromFirebase(currentMarket, (data) => {
+        if (data) {
+          document.getElementById('input').value = data.input;
+          const outputHTML = `
+            <div class="result-box">
+              <div class="label">Prediksi Pola (2D Terakhir):</div>
+              <div class="value">${data.patterns.join(', ')}</div>
+            </div>
+            <div class="result-box">
+              <div class="label">Semua 2D dengan Pola Tersebut:</div>
+              <div class="value copy-target">${data.all2D}</div>
+              <button class="copy-btn" onclick="copyFromBlock(this)">Salin Semua 2D</button>
+            </div>
+          `;
+          document.getElementById('results').innerHTML = outputHTML;
+          document.getElementById('results').style.display = 'block';
+        }
+      });
+
+      marketSelect.addEventListener('change', (e) => {
+        const newMarket = e.target.value;
+        loadFromFirebase(newMarket, (data) => {
+          const inp = document.getElementById('input');
+          const res = document.getElementById('results');
+          if (data) {
+            inp.value = data.input;
+            const outputHTML = `
+              <div class="result-box">
+                <div class="label">Prediksi Pola (2D Terakhir):</div>
+                <div class="value">${data.patterns.join(', ')}</div>
+              </div>
+              <div class="result-box">
+                <div class="label">Semua 2D dengan Pola Tersebut:</div>
+                <div class="value copy-target">${data.all2D}</div>
+                <button class="copy-btn" onclick="copyFromBlock(this)">Salin Semua 2D</button>
+              </div>
+            `;
+            res.innerHTML = outputHTML;
+            res.style.display = 'block';
+          } else {
+            inp.value = '';
+            res.style.display = 'none';
+            res.innerHTML = '';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
