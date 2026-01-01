@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📝 Rumah18 - Catatan Penting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 16px;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 150px;
+      resize: vertical;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .btn-secondary {
+      background-color: #2196F3;
+    }
+    .btn-danger {
+      background-color: #f44336;
+    }
+    .status {
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .status.success { background-color: #d4edda; color: #155724; }
+    .status.error { background-color: #f8d7da; color: #721c24; }
+    .back-home {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      text-decoration: none;
+      color: #1976D2;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">🔙 Kembali ke Beranda</a>
+    </div>
+
+    <h1>📝 Catatan Penting per Market</h1>
+
+    <label for="market-select">Pilih Market:</label>
+    <select id="market-select">
+      <option value="">-- Pilih Market --</option>
+      <option value="Cambodia">Cambodia</option>
+      <option value="Sidney">Sidney</option>
+      <option value="China">China</option>
+      <option value="Japan">Japan</option>
+      <option value="SGP">SGP</option>
+      <option value="Taiwan">Taiwan</option>
+      <option value="Hongkong">Hongkong</option>
+      <option value="Nusa">Nusa</option>
+    </select>
+
+    <label for="catatan">Catatan:</label>
+    <textarea id="catatan" placeholder="Masukkan catatan penting di sini (angka, huruf, dll)..."></textarea>
+
+    <button id="btn-simpan">💾 Simpan ke Firebase</button>
+    <button id="btn-salin" class="btn-secondary">📋 Salin Isi Catatan</button>
+
+    <div id="status" class="status" style="display: none;"></div>
+  </div>
+
+  <script type="module">
+    // 🔌 Firebase Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // 🔑 Firebase Config (sama seperti rumah1)
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "nomoromosse.firebaseapp.com",
+      databaseURL: "https://nomoromosse-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "nomoromosse",
+      storageBucket: "nomoromosse.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // DOM Elements
+    const marketSelect = document.getElementById('market-select');
+    const catatanArea = document.getElementById('catatan');
+    const btnSimpan = document.getElementById('btn-simpan');
+    const btnSalin = document.getElementById('btn-salin');
+    const statusDiv = document.getElementById('status');
+
+    // Fungsi Tampilkan Status
+    function showStatus(msg, isSuccess = true) {
+      statusDiv.textContent = msg;
+      statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+      statusDiv.style.display = 'block';
+      setTimeout(() => statusDiv.style.display = 'none', 3000);
+    }
+
+    // 🔽 Load catatan saat market dipilih
+    marketSelect.addEventListener('change', async () => {
+      const market = marketSelect.value;
+      if (!market) {
+        catatanArea.value = '';
+        return;
+      }
+
+      try {
+        const snapshot = await get(ref(db, `rumah18/${market}`));
+        if (snapshot.exists()) {
+          catatanArea.value = snapshot.val().catatan || '';
+          showStatus(`✅ Catatan untuk ${market} dimuat.`, true);
+        } else {
+          catatanArea.value = '';
+          showStatus(`ℹ️ Belum ada catatan untuk ${market}.`, false);
+        }
+      } catch (err) {
+        console.error("Gagal muat catatan:", err);
+        showStatus("❌ Gagal muat catatan.", false);
+        catatanArea.value = '';
+      }
+    });
+
+    // 💾 Simpan ke Firebase
+    btnSimpan.addEventListener('click', async () => {
+      const market = marketSelect.value;
+      const catatan = catatanArea.value.trim();
+
+      if (!market) {
+        showStatus("⚠️ Pilih market terlebih dahulu.", false);
+        return;
+      }
+
+      try {
+        await set(ref(db, `rumah18/${market}`), {
+          catatan: catatan,
+          lastUpdated: new Date().toISOString()
+        });
+        showStatus(`✅ Catatan untuk ${market} tersimpan!`, true);
+      } catch (err) {
+        console.error("Gagal simpan:", err);
+        showStatus("❌ Gagal menyimpan catatan.", false);
+      }
+    });
+
+    // 📋 Salin Isi Catatan
+    btnSalin.addEventListener('click', () => {
+      const text = catatanArea.value;
+      if (!text) {
+        showStatus("ℹ️ Tidak ada teks untuk disalin.", false);
+        return;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        showStatus("📋 Teks disalin ke clipboard!", true);
+      }).catch(err => {
+        console.error("Gagal salin:", err);
+        showStatus("❌ Gagal menyalin teks.", false);
+      });
+    });
+  </script>
+</body>
+</html>
