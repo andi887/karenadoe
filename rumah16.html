@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rumah16</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --danger: #ef4444;
+      --ok: #10b981;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin: 0 0 20px;
+      letter-spacing: 0.2px;
+    }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    select {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-secondary {
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .sheet {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .sheet-title {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .sheet-content {
+      background: #0c1220;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .sheet-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-salin {
+      background: linear-gradient(90deg, var(--ok), #34d399);
+      color: #0b1020;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+    .btn-simpan {
+      background: linear-gradient(90deg, #FF9800, #FFB347);
+      color: #0b1020;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+    select {
+      appearance: none;
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      padding-right: 36px;
+    }
+    .status {
+      text-align: center;
+      min-height: 24px;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .success { color: var(--ok); }
+    .error { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <h1>rumah16</h1>
+    <div id="market-status"></div>
+
+    <div class="card">
+      <div style="margin-bottom: 16px;">
+        <label for="marketSelect">Pilih Market</label>
+        <select id="marketSelect">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnMuatDariRumah9">⟳ Muat dari rumah9</button>
+        <button id="btnTambahLembaran" class="btn-secondary">📄 Tambah Lembaran</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <div id="lembaranContainer"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    let selectedMarket = null;
+    const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
+
+    function showStatus(text, type = "") {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = "status " + type;
+    }
+
+    function salinTeks(teks) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          showStatus("✅ Disalin ke clipboard!", "success");
+        }).catch(() => {
+          showStatus("❌ Gagal menyalin.", "error");
+        });
+      } else {
+        showStatus("❌ Clipboard tidak didukung.", "error");
+      }
+    }
+
+    function buatLembaran(data = "", key = null, dariRumah9 = false) {
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      const title = dariRumah9 ? `Hasil dari rumah9 (${key})` : `Lembaran Baru`;
+      sheet.innerHTML = `
+        <div class="sheet-header">
+          <div class="sheet-title">${title}</div>
+        </div>
+        <div class="sheet-content" contenteditable="false">${data || "— Kosong —"}</div>
+        <div class="sheet-actions">
+          <button class="btn-salin" data-teks="${data || ''}">Salin</button>
+          <button class="btn-simpan" data-key="${key || ''}">Simpan ke Cloud</button>
+        </div>
+      `;
+
+      // Event salin
+      sheet.querySelector('.btn-salin').addEventListener('click', (e) => {
+        const teks = e.target.getAttribute('data-teks');
+        salinTeks(teks);
+      });
+
+      // Event simpan
+      sheet.querySelector('.btn-simpan').addEventListener('click', (e) => {
+        if (!selectedMarket) {
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        const teks = sheet.querySelector('.sheet-content').textContent;
+        if (!teks || teks === "— Kosong —") {
+          showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
+          return;
+        }
+
+        const dataToSave = {
+          isi: teks,
+          sumber: dariRumah9 ? 'rumah9' : 'manual',
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        firebase.database().ref(`rumah16/${selectedMarket}`).push(dataToSave)
+          .then(() => {
+            showStatus("✅ Data tersimpan ke cloud!", "success");
+          })
+          .catch(err => {
+            console.error("Simpan error:", err);
+            showStatus("❌ Gagal simpan: cek koneksi.", "error");
+          });
+      });
+
+      return sheet;
+    }
+
+    async function muatDariRumah9(market) {
+      if (!market) return;
+      try {
+        const snapshot = await firebase.database().ref(`rumah9/${market}`).once('value');
+        const container = document.getElementById('lembaranContainer');
+        container.innerHTML = '';
+
+        if (!snapshot.exists()) {
+          showStatus(`ℹ️ Tidak ada data di rumah9 untuk ${market}.`, "error");
+          return;
+        }
+
+        const data = snapshot.val();
+        let hasData = false;
+        for (const key in data) {
+          if (data[key] && data[key].hasil) {
+            hasData = true;
+            const sheet = buatLembaran(data[key].hasil, key, true);
+            container.appendChild(sheet);
+          }
+        }
+
+        if (!hasData) {
+          showStatus(`ℹ️ Tidak ada hasil valid di rumah9 untuk ${market}.`, "error");
+        } else {
+          showStatus(`✅ ${Object.keys(data).length} data dimuat dari rumah9.`, "success");
+        }
+      } catch (err) {
+        console.error("Gagal muat dari rumah9:", err);
+        showStatus("⚠️ Gagal muat data dari rumah9.", "error");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat.", "error");
+        return;
+      }
+
+      const marketSelect = document.getElementById('marketSelect');
+      const btnMuat = document.getElementById('btnMuatDariRumah9');
+      const btnTambah = document.getElementById('btnTambahLembaran');
+      const marketStatusEl = document.getElementById('market-status');
+
+      // Baca market aktif
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif && MARKETS.includes(marketAktif)) {
+        marketSelect.value = marketAktif;
+        selectedMarket = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+      } else {
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif.";
+        marketStatusEl.style.color = "#ef4444";
+      }
+
+      marketSelect.addEventListener('change', () => {
+        selectedMarket = marketSelect.value;
+        if (selectedMarket) {
+          localStorage.setItem('marketAktif', selectedMarket);
+          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
+          marketStatusEl.style.color = var(--accent);
+        } else {
+          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+          document.getElementById('lembaranContainer').innerHTML = '';
+        }
+      });
+
+      btnMuat.addEventListener('click', () => {
+        if (!selectedMarket) {
+          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+          return;
+        }
+        muatDariRumah9(selectedMarket);
+      });
+
+      btnTambah.addEventListener('click', () => {
+        const container = document.getElementById('lembaranContainer');
+        const sheet = buatLembaran();
+        container.appendChild(sheet);
+      });
+    });
+  </script>
+</body>
+</html>
