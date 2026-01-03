@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="framework" content="firebase"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rumah16</title>
   <style>
@@ -46,12 +45,6 @@
       margin: 0 0 20px;
       letter-spacing: 0.2px;
     }
-    #market-status {
-      text-align: center;
-      font-weight: bold;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
     .card {
       background: linear-gradient(180deg, #121826, #0f1624);
       border: 1px solid rgba(255,255,255,0.06);
@@ -74,13 +67,7 @@
       padding: 10px 12px;
       font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s ease;
-    }
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 12px;
+      margin-bottom: 16px;
     }
     button {
       background: linear-gradient(90deg, var(--accent), var(--accent2));
@@ -90,9 +77,8 @@
       border-radius: 10px;
       padding: 10px 14px;
       cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      transition: transform 0.08s ease;
     }
-    button:hover { filter: brightness(1.08); }
     button:active { transform: translateY(1px); }
     .btn-secondary {
       background: #0c1220;
@@ -106,25 +92,17 @@
       padding: 16px;
       margin: 16px 0;
     }
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .sheet-title {
-      font-weight: bold;
-      color: var(--accent);
-    }
-    .sheet-content {
+    .sheet textarea {
+      width: 100%;
+      min-height: 100px;
       background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px;
       padding: 12px;
       font-family: monospace;
       font-size: 0.95rem;
-      white-space: pre-wrap;
-      word-break: break-word;
-      min-height: 30px;
+      resize: vertical;
     }
     .sheet-actions {
       display: flex;
@@ -132,26 +110,8 @@
       margin-top: 12px;
       flex-wrap: wrap;
     }
-    .btn-salin {
-      background: linear-gradient(90deg, var(--ok), #34d399);
-      color: #0b1020;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-    }
-    .btn-simpan {
-      background: linear-gradient(90deg, #FF9800, #FFB347);
-      color: #0b1020;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-    }
-    select {
-      appearance: none;
-      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
-      padding-right: 36px;
-    }
+    .btn-salin { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; padding: 6px 12px; font-size: 0.9rem; }
+    .btn-simpan { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; padding: 6,12px; font-size: 0.9rem; }
     .status {
       text-align: center;
       min-height: 24px;
@@ -169,29 +129,22 @@
     </div>
 
     <h1>rumah16</h1>
-    <div id="market-status"></div>
 
     <div class="card">
-      <div style="margin-bottom: 16px;">
-        <label for="marketSelect">Pilih Market</label>
-        <select id="marketSelect">
-          <option value="">-- Pilih Market --</option>
-          <option value="Cambodia">Cambodia</option>
-          <option value="Sidney">Sidney</option>
-          <option value="China">China</option>
-          <option value="Japan">Japan</option>
-          <option value="SGP">SGP</option>
-          <option value="Taiwan">Taiwan</option>
-          <option value="Hongkong">Hongkong</option>
-          <option value="Nusa">Nusa</option>
-        </select>
-      </div>
+      <label for="marketSelect">Pilih Market</label>
+      <select id="marketSelect">
+        <option value="">-- Pilih Market --</option>
+        <option value="Cambodia">Cambodia</option>
+        <option value="Sidney">Sidney</option>
+        <option value="China">China</option>
+        <option value="Japan">Japan</option>
+        <option value="SGP">SGP</option>
+        <option value="Taiwan">Taiwan</option>
+        <option value="Hongkong">Hongkong</option>
+        <option value="Nusa">Nusa</option>
+      </select>
 
-      <div class="btn-row">
-        <button id="btnMuatDariRumah9">⟳ Muat dari rumah9</button>
-        <button id="btnTambahLembaran" class="btn-secondary">📄 Tambah Lembaran</button>
-      </div>
-
+      <button id="btnTambahLembaran">📄 Tambah Lembaran Kosong</button>
       <div id="status" class="status"></div>
     </div>
 
@@ -215,125 +168,68 @@
     function salinTeks(teks) {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(teks).then(() => {
-          showStatus("✅ Disalin ke clipboard!", "success");
-        }).catch(() => {
-          showStatus("❌ Gagal menyalin.", "error");
-        });
-      } else {
-        showStatus("❌ Clipboard tidak didukung.", "error");
+          showStatus("✅ Disalin!", "success");
+        }).catch(() => showStatus("❌ Gagal salin.", "error"));
       }
     }
 
-    function buatLembaran(isi = "", dariRumah9 = false, key = "") {
-      const div = document.createElement('div');
-      div.className = 'sheet';
-      const title = dariRumah9 ? `Dari rumah9 (${key})` : "Lembaran Baru";
-      div.innerHTML = `
-        <div class="sheet-header">
-          <div class="sheet-title">${title}</div>
-        </div>
-        <div class="sheet-content">${isi || "— Kosong —"}</div>
+    function tambahLembaran() {
+      const container = document.getElementById('lembaranContainer');
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      sheet.innerHTML = `
+        <textarea placeholder="Ketik atau paste data apa saja di sini..."></textarea>
         <div class="sheet-actions">
           <button class="btn-salin">Salin</button>
           <button class="btn-simpan">Simpan ke Cloud</button>
         </div>
       `;
-      
-      div.querySelector('.btn-salin').addEventListener('click', () => {
-        salinTeks(div.querySelector('.sheet-content').textContent);
+
+      const textarea = sheet.querySelector('textarea');
+      const btnSalin = sheet.querySelector('.btn-salin');
+      const btnSimpan = sheet.querySelector('.btn-simpan');
+
+      btnSalin.addEventListener('click', () => {
+        salinTeks(textarea.value);
       });
-      
-      div.querySelector('.btn-simpan').addEventListener('click', () => {
+
+      btnSimpan.addEventListener('click', () => {
         if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", "error");
-        const teks = div.querySelector('.sheet-content').textContent;
-        if (!teks || teks === "— Kosong —") return showStatus("⚠️ Tidak ada data.", "error");
+        if (!textarea.value.trim()) return showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
         
         firebase.database().ref(`rumah16/${selectedMarket}`).push({
-          isi: teks,
-          sumber: dariRumah9 ? 'rumah9' : 'manual',
+          isi: textarea.value,
           timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-          showStatus("✅ Tersimpan!", "success");
+          showStatus("✅ Tersimpan ke cloud!", "success");
         }).catch(err => {
           console.error(err);
           showStatus("❌ Gagal simpan.", "error");
         });
       });
-      
-      return div;
+
+      container.appendChild(sheet);
     }
 
-    async function muatDariRumah9(market) {
-      if (!market) return showStatus("⚠️ Pilih market.", "error");
-      
-      try {
-        const snapshot = await firebase.database().ref(`rumah9/${market}`).once('value');
-        const container = document.getElementById('lembaranContainer');
-        container.innerHTML = '';
-        
-        if (!snapshot.exists() || !snapshot.val()) {
-          showStatus("ℹ️ Tidak ada data di rumah9.", "error");
-          return;
-        }
-
-        const data = snapshot.val();
-        let count = 0;
-        for (const key in data) {
-          const entry = data[key];
-          // Ambil field "hasil", atau seluruh entry jika "hasil" tidak ada
-          const isi = (typeof entry === 'object' && entry.hasil) ? entry.hasil : 
-                      (typeof entry === 'string' ? entry : JSON.stringify(entry));
-          
-          if (isi && isi !== "null") {
-            container.appendChild(buatLembaran(isi, true, key));
-            count++;
-          }
-        }
-        
-        if (count === 0) {
-          showStatus("ℹ️ Tidak ada data valid di rumah9.", "error");
-        } else {
-          showStatus(`✅ ${count} lembaran dimuat dari rumah9.`, "success");
-        }
-      } catch (err) {
-        console.error("Error muat dari rumah9:", err);
-        showStatus("❌ Error: " + (err.message || "cek koneksi & rules Firebase"), "error");
-      }
-    }
-
-    // Inisialisasi
     document.addEventListener('DOMContentLoaded', () => {
-      if (!firebase.apps.length) {
-        showStatus("⚠️ Firebase gagal inisialisasi.", "error");
-        return;
-      }
-
       const marketSelect = document.getElementById('marketSelect');
-      const marketStatus = document.getElementById('market-status');
+      const btnTambah = document.getElementById('btnTambahLembaran');
 
       // Baca market aktif
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
-        marketStatus.textContent = `📊 Market aktif: ${marketAktif}`;
       }
 
-      marketSelect.addEventListener('change', () => {
-        selectedMarket = marketSelect.value;
+      marketSelect.addEventListener('change', (e) => {
+        selectedMarket = e.target.value;
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
-          marketStatus.textContent = `📊 Market aktif: ${selectedMarket}`;
         }
       });
 
-      document.getElementById('btnMuatDariRumah9').addEventListener('click', () => {
-        muatDariRumah9(selectedMarket);
-      });
-
-      document.getElementById('btnTambahLembaran').addEventListener('click', () => {
-        document.getElementById('lembaranContainer').appendChild(buatLembaran());
-      });
+      btnTambah.addEventListener('click', tambahLembaran);
     });
   </script>
 </body>
