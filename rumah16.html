@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <meta name="framework" content="firebase"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rumah16</title>
   <style>
@@ -123,6 +124,7 @@
       font-size: 0.95rem;
       white-space: pre-wrap;
       word-break: break-word;
+      min-height: 30px;
     }
     .sheet-actions {
       display: flex;
@@ -196,14 +198,13 @@
     <div id="lembaranContainer"></div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
     let selectedMarket = null;
-    const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
 
     function showStatus(text, type = "") {
       const el = document.getElementById('status');
@@ -223,137 +224,115 @@
       }
     }
 
-    function buatLembaran(data = "", key = null, dariRumah9 = false) {
-      const sheet = document.createElement('div');
-      sheet.className = 'sheet';
-      const title = dariRumah9 ? `Hasil dari rumah9 (${key})` : `Lembaran Baru`;
-      sheet.innerHTML = `
+    function buatLembaran(isi = "", dariRumah9 = false, key = "") {
+      const div = document.createElement('div');
+      div.className = 'sheet';
+      const title = dariRumah9 ? `Dari rumah9 (${key})` : "Lembaran Baru";
+      div.innerHTML = `
         <div class="sheet-header">
           <div class="sheet-title">${title}</div>
         </div>
-        <div class="sheet-content" contenteditable="false">${data || "— Kosong —"}</div>
+        <div class="sheet-content">${isi || "— Kosong —"}</div>
         <div class="sheet-actions">
-          <button class="btn-salin" data-teks="${data || ''}">Salin</button>
-          <button class="btn-simpan" data-key="${key || ''}">Simpan ke Cloud</button>
+          <button class="btn-salin">Salin</button>
+          <button class="btn-simpan">Simpan ke Cloud</button>
         </div>
       `;
-
-      // Event salin
-      sheet.querySelector('.btn-salin').addEventListener('click', (e) => {
-        const teks = e.target.getAttribute('data-teks');
-        salinTeks(teks);
+      
+      div.querySelector('.btn-salin').addEventListener('click', () => {
+        salinTeks(div.querySelector('.sheet-content').textContent);
       });
-
-      // Event simpan
-      sheet.querySelector('.btn-simpan').addEventListener('click', (e) => {
-        if (!selectedMarket) {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
-          return;
-        }
-        const teks = sheet.querySelector('.sheet-content').textContent;
-        if (!teks || teks === "— Kosong —") {
-          showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
-          return;
-        }
-
-        const dataToSave = {
+      
+      div.querySelector('.btn-simpan').addEventListener('click', () => {
+        if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", "error");
+        const teks = div.querySelector('.sheet-content').textContent;
+        if (!teks || teks === "— Kosong —") return showStatus("⚠️ Tidak ada data.", "error");
+        
+        firebase.database().ref(`rumah16/${selectedMarket}`).push({
           isi: teks,
           sumber: dariRumah9 ? 'rumah9' : 'manual',
           timestamp: firebase.database.ServerValue.TIMESTAMP
-        };
-
-        firebase.database().ref(`rumah16/${selectedMarket}`).push(dataToSave)
-          .then(() => {
-            showStatus("✅ Data tersimpan ke cloud!", "success");
-          })
-          .catch(err => {
-            console.error("Simpan error:", err);
-            showStatus("❌ Gagal simpan: cek koneksi.", "error");
-          });
+        }).then(() => {
+          showStatus("✅ Tersimpan!", "success");
+        }).catch(err => {
+          console.error(err);
+          showStatus("❌ Gagal simpan.", "error");
+        });
       });
-
-      return sheet;
+      
+      return div;
     }
 
     async function muatDariRumah9(market) {
-      if (!market) return;
+      if (!market) return showStatus("⚠️ Pilih market.", "error");
+      
       try {
         const snapshot = await firebase.database().ref(`rumah9/${market}`).once('value');
         const container = document.getElementById('lembaranContainer');
         container.innerHTML = '';
-
-        if (!snapshot.exists()) {
-          showStatus(`ℹ️ Tidak ada data di rumah9 untuk ${market}.`, "error");
+        
+        if (!snapshot.exists() || !snapshot.val()) {
+          showStatus("ℹ️ Tidak ada data di rumah9.", "error");
           return;
         }
 
         const data = snapshot.val();
-        let hasData = false;
+        let count = 0;
         for (const key in data) {
-          if (data[key] && data[key].hasil) {
-            hasData = true;
-            const sheet = buatLembaran(data[key].hasil, key, true);
-            container.appendChild(sheet);
+          const entry = data[key];
+          // Ambil field "hasil", atau seluruh entry jika "hasil" tidak ada
+          const isi = (typeof entry === 'object' && entry.hasil) ? entry.hasil : 
+                      (typeof entry === 'string' ? entry : JSON.stringify(entry));
+          
+          if (isi && isi !== "null") {
+            container.appendChild(buatLembaran(isi, true, key));
+            count++;
           }
         }
-
-        if (!hasData) {
-          showStatus(`ℹ️ Tidak ada hasil valid di rumah9 untuk ${market}.`, "error");
+        
+        if (count === 0) {
+          showStatus("ℹ️ Tidak ada data valid di rumah9.", "error");
         } else {
-          showStatus(`✅ ${Object.keys(data).length} data dimuat dari rumah9.`, "success");
+          showStatus(`✅ ${count} lembaran dimuat dari rumah9.`, "success");
         }
       } catch (err) {
-        console.error("Gagal muat dari rumah9:", err);
-        showStatus("⚠️ Gagal muat data dari rumah9.", "error");
+        console.error("Error muat dari rumah9:", err);
+        showStatus("❌ Error: " + (err.message || "cek koneksi & rules Firebase"), "error");
       }
     }
 
+    // Inisialisasi
     document.addEventListener('DOMContentLoaded', () => {
-      if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        showStatus("⚠️ Firebase tidak dimuat.", "error");
+      if (!firebase.apps.length) {
+        showStatus("⚠️ Firebase gagal inisialisasi.", "error");
         return;
       }
 
       const marketSelect = document.getElementById('marketSelect');
-      const btnMuat = document.getElementById('btnMuatDariRumah9');
-      const btnTambah = document.getElementById('btnTambahLembaran');
-      const marketStatusEl = document.getElementById('market-status');
+      const marketStatus = document.getElementById('market-status');
 
       // Baca market aktif
       const marketAktif = localStorage.getItem('marketAktif');
-      if (marketAktif && MARKETS.includes(marketAktif)) {
+      if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
-        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
-      } else {
-        marketStatusEl.textContent = "⚠️ Tidak ada market aktif.";
-        marketStatusEl.style.color = "#ef4444";
+        marketStatus.textContent = `📊 Market aktif: ${marketAktif}`;
       }
 
       marketSelect.addEventListener('change', () => {
         selectedMarket = marketSelect.value;
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
-          marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          marketStatusEl.style.color = var(--accent);
-        } else {
-          marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
-          document.getElementById('lembaranContainer').innerHTML = '';
+          marketStatus.textContent = `📊 Market aktif: ${selectedMarket}`;
         }
       });
 
-      btnMuat.addEventListener('click', () => {
-        if (!selectedMarket) {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
-          return;
-        }
+      document.getElementById('btnMuatDariRumah9').addEventListener('click', () => {
         muatDariRumah9(selectedMarket);
       });
 
-      btnTambah.addEventListener('click', () => {
-        const container = document.getElementById('lembaranContainer');
-        const sheet = buatLembaran();
-        container.appendChild(sheet);
+      document.getElementById('btnTambahLembaran').addEventListener('click', () => {
+        document.getElementById('lembaranContainer').appendChild(buatLembaran());
       });
     });
   </script>
