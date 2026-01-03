@@ -111,7 +111,7 @@
       flex-wrap: wrap;
     }
     .btn-salin { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; padding: 6px 12px; font-size: 0.9rem; }
-    .btn-simpan { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; padding: 6,12px; font-size: 0.9rem; }
+    .btn-simpan { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; padding: 6px 12px; font-size: 0.9rem; }
     .status {
       text-align: center;
       min-height: 24px;
@@ -173,63 +173,105 @@
       }
     }
 
-    function tambahLembaran() {
+    function buatLembaran(isi = "", key = null) {
       const container = document.getElementById('lembaranContainer');
       const sheet = document.createElement('div');
       sheet.className = 'sheet';
       sheet.innerHTML = `
-        <textarea placeholder="Ketik atau paste data apa saja di sini..."></textarea>
+        <textarea placeholder="Ketik atau paste data...">${isi}</textarea>
         <div class="sheet-actions">
           <button class="btn-salin">Salin</button>
-          <button class="btn-simpan">Simpan ke Cloud</button>
+          <button class="btn-simpan">Simpan</button>
+          ${key ? `<button class="btn-hapus" data-key="${key}">Hapus</button>` : ''}
         </div>
       `;
 
       const textarea = sheet.querySelector('textarea');
       const btnSalin = sheet.querySelector('.btn-salin');
       const btnSimpan = sheet.querySelector('.btn-simpan');
+      const btnHapus = sheet.querySelector('.btn-hapus');
 
-      btnSalin.addEventListener('click', () => {
-        salinTeks(textarea.value);
-      });
-
+      btnSalin.addEventListener('click', () => salinTeks(textarea.value));
+      
       btnSimpan.addEventListener('click', () => {
         if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", "error");
-        if (!textarea.value.trim()) return showStatus("⚠️ Tidak ada data untuk disimpan.", "error");
+        if (!textarea.value.trim()) return showStatus("⚠️ Tidak ada data.", "error");
         
-        firebase.database().ref(`rumah16/${selectedMarket}`).push({
-          isi: textarea.value,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-          showStatus("✅ Tersimpan ke cloud!", "success");
-        }).catch(err => {
-          console.error(err);
-          showStatus("❌ Gagal simpan.", "error");
-        });
+        if (key) {
+          // Update existing
+          firebase.database().ref(`rumah16/${selectedMarket}/${key}`).set({
+            isi: textarea.value,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          }).then(() => showStatus("✅ Diperbarui!", "success"));
+        } else {
+          // Save new
+          firebase.database().ref(`rumah16/${selectedMarket}`).push({
+            isi: textarea.value,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          }).then(() => showStatus("✅ Tersimpan!", "success"));
+        }
       });
+
+      if (btnHapus) {
+        btnHapus.addEventListener('click', () => {
+          if (confirm("Hapus lembaran ini?")) {
+            firebase.database().ref(`rumah16/${selectedMarket}/${key}`).remove()
+              .then(() => {
+                sheet.remove();
+                showStatus("🗑️ Dihapus.", "success");
+              });
+          }
+        });
+      }
 
       container.appendChild(sheet);
     }
 
+    async function muatDataTersimpan(market) {
+      if (!market) return;
+      try {
+        const snapshot = await firebase.database().ref(`rumah16/${market}`).once('value');
+        document.getElementById('lembaranContainer').innerHTML = '';
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          Object.keys(data).forEach(key => {
+            const isi = data[key].isi || "";
+            buatLembaran(isi, key);
+          });
+        }
+      } catch (err) {
+        console.error("Gagal muat data:", err);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      if (!firebase.apps.length) {
+        showStatus("⚠️ Firebase gagal inisialisasi.", "error");
+        return;
+      }
+
       const marketSelect = document.getElementById('marketSelect');
       const btnTambah = document.getElementById('btnTambahLembaran');
 
-      // Baca market aktif
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
+        muatDataTersimpan(marketAktif);
       }
 
       marketSelect.addEventListener('change', (e) => {
         selectedMarket = e.target.value;
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
+          muatDataTersimpan(selectedMarket);
         }
       });
 
-      btnTambah.addEventListener('click', tambahLembaran);
+      btnTambah.addEventListener('click', () => {
+        buatLembaran();
+      });
     });
   </script>
 </body>
