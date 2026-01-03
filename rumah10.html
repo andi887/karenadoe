@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>kamar10</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 10px 20px;
+      background: #2ecc71;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .back-btn:hover {
+      background: #27ae60;
+    }
+    .feature-label {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      font-size: 1.3em;
+    }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      min-width: 850px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    th {
+      background-color: #f2f2f9;
+      position: sticky;
+      top: 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      border: 1px solid transparent;
+      outline: none;
+      padding: 6px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: #2196F3;
+      background-color: #f9f9f9;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .add-row-btn { background-color: #FF9800; color: white; }
+    .save-firebase-btn { background-color: #4CAF50; color: white; }
+    .delete-btn {
+      background-color: #f44336;
+      color: white;
+      padding: 4px 8px;
+      font-size: 0.8em;
+    }
+    .input-error { 
+      color: #d32f2f; 
+      font-weight: bold; 
+      background-color: #ffebee;
+    }
+    #status {
+      text-align: center;
+      margin: 8px 0;
+      min-height: 20px;
+      font-weight: bold;
+    }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: center; }
+      button { width: 100%; max-width: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
+  <div class="feature-label">kamar10</div>
+
+  <!-- Pilih Market -->
+  <div class="card">
+    <label for="marketSelect">Pilih Market</label>
+    <select id="marketSelect">
+      <option value="">-- Pilih Market --</option>
+      <option value="Cambodia">Cambodia</option>
+      <option value="Sidney">Sidney</option>
+      <option value="China">China</option>
+      <option value="Japan">Japan</option>
+      <option value="SGP">SGP</option>
+      <option value="Taiwan">Taiwan</option>
+      <option value="Hongkong">Hongkong</option>
+      <option value="Nusa">Nusa</option>
+    </select>
+  </div>
+
+  <div id="market-status"></div>
+  <div id="status"></div>
+
+  <div class="table-container">
+    <table id="kamar10-table">
+      <thead>
+        <tr>
+          <th>tgl</th>
+          <th>res</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+          <th>8</th>
+          <th>9</th>
+          <th>10</th>
+          <th>11</th>
+          <th>12</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data akan dimuat di sini -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="controls">
+    <button class="add-row-btn" id="add-row">Tambah Baris</button>
+    <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    // === FUNGSI BANTU ===
+    function angkaKeShio(n) {
+      n = n % 12;
+      return n === 0 ? 12 : n;
+    }
+
+    function getIndex(d) {
+      return (d + 5) % 10;
+    }
+
+    function hitungDasar2D(duaD) {
+      let total = duaD < 10 ? duaD : Math.floor(duaD / 10) + (duaD % 10);
+      while (total >= 10) {
+        total = Math.floor(total / 10) + (total % 10);
+      }
+      return total === 0 ? 9 : total;
+    }
+
+    // === 17 RUMUS (4D asli dari rumah3) ===
+    function hitungRumusLemah(tglSeb, tglSkr, resSebelum, resSekarang) {
+      const strSekarang = resSekarang.toString().padStart(4, '0');
+      const AS = parseInt(strSekarang[0]);
+      const KOP = parseInt(strSekarang[1]);
+      const KEPALA = parseInt(strSekarang[2]);
+      const EKOR = parseInt(strSekarang[3]);
+      const duaD = KEPALA * 10 + EKOR;
+
+      const strSebelum = resSebelum.toString().padStart(4, '0');
+      const AS_Lalu = parseInt(strSebelum[0]);
+
+      const shioLemahPerRumus = {};
+
+      shioLemahPerRumus[1] = angkaKeShio(tglSkr);
+      shioLemahPerRumus[2] = angkaKeShio(tglSkr + 7);
+      shioLemahPerRumus[3] = angkaKeShio(tglSeb + tglSkr);
+      shioLemahPerRumus[4] = angkaKeShio(hitungDasar2D(duaD) + tglSkr);
+      shioLemahPerRumus[5] = angkaKeShio(100 - duaD);
+      shioLemahPerRumus[6] = angkaKeShio(99 - duaD);
+      shioLemahPerRumus[7] = angkaKeShio(getIndex(AS) * 10 + getIndex(KOP));
+      shioLemahPerRumus[8] = angkaKeShio(getIndex(KEPALA) * 10 + getIndex(EKOR));
+      shioLemahPerRumus[9] = angkaKeShio(AS * 10 + KOP);
+      shioLemahPerRumus[10] = angkaKeShio(KOP * 10 + KEPALA);
+      shioLemahPerRumus[13] = angkaKeShio(AS * 10 + EKOR);
+      shioLemahPerRumus[14] = angkaKeShio(getIndex(AS_Lalu) * 10 + getIndex(AS));
+
+      const combined8 = strSebelum + strSekarang;
+      const result6 = combined8.slice(-6).padStart(6, '0');
+      let sum15 = 0;
+      for (const char of result6) sum15 += parseInt(char, 10);
+      sum15 += 9;
+      const target2D_15 = (sum15 % 100).toString().padStart(2, '0');
+      shioLemahPerRumus[15] = angkaKeShio(parseInt(target2D_15));
+
+      const ac2D = result6[0] + result6[1];
+      shioLemahPerRumus[16] = angkaKeShio(parseInt(ac2D));
+
+      let sum17 = 0;
+      for (const char of result6) sum17 += parseInt(char, 10);
+      const mod17 = sum17 % 12;
+      shioLemahPerRumus[17] = mod17 === 0 ? 12 : mod17;
+
+      const shioAngka = {};
+      for (let s = 1; s <= 12; s++) {
+        shioAngka[s] = [s];
+        for (let n = s + 12; n <= 99; n += 12) {
+          shioAngka[s].push(n);
+        }
+      }
+
+      const shioLemah11 = [];
+      for (let s = 1; s <= 12; s++) {
+        if (!shioAngka[s].some(num => num.toString().padStart(2, '0').includes(KEPALA.toString()))) {
+          shioLemah11.push(s);
+        }
+      }
+
+      const shioLemah12 = [];
+      for (let s = 1; s <= 12; s++) {
+        if (!shioAngka[s].some(num => num.toString().padStart(2, '0').includes(EKOR.toString()))) {
+          shioLemah12.push(s);
+        }
+      }
+
+      return { shioLemahPerRumus, shioLemah11, shioLemah12 };
+    }
+
+    function tampilkanHasil(row, rumusResult) {
+      const { shioLemahPerRumus, shioLemah11, shioLemah12 } = rumusResult;
+      const cells = row.querySelectorAll('td input');
+
+      for (let i = 2; i <= 13; i++) {
+        cells[i].value = "✓";
+        cells[i].classList.remove('input-error');
+      }
+
+      const rumusSatuan = [1,2,3,4,5,6,7,8,9,10,13,14,15,16,17];
+      rumusSatuan.forEach(rumus => {
+        const shio = shioLemahPerRumus[rumus];
+        if (shio >= 1 && shio <= 12) {
+          cells[shio + 1].value = rumus.toString();
+          cells[shio + 1].classList.add('input-error');
+        }
+      });
+
+      shioLemah11.forEach(shio => {
+        if (shio >= 1 && shio <= 12) {
+          cells[shio + 1].value = cells[shio + 1].value === "✓" ? "11" : cells[shio + 1].value + ",11";
+          cells[shio + 1].classList.add('input-error');
+        }
+      });
+
+      shioLemah12.forEach(shio => {
+        if (shio >= 1 && shio <= 12) {
+          cells[shio + 1].value = cells[shio + 1].value === "✓" ? "12" : cells[shio + 1].value + ",12";
+          cells[shio + 1].classList.add('input-error');
+        }
+      });
+    }
+
+    function formatTanggalInput(inputElement) {
+      inputElement.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length >= 2) {
+          value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+      });
+    }
+
+    function showStatus(msg, isSuccess = true) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = msg;
+      statusEl.className = isSuccess ? 'success' : 'error';
+      setTimeout(() => statusEl.textContent = '', 3000);
+    }
+
+    function calculateRow(targetRow) {
+      const tbody = targetRow.parentElement;
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      const targetIndex = allRows.indexOf(targetRow);
+      if (targetIndex === 0) return;
+
+      const sourceRow = allRows[targetIndex - 1];
+      const resSebelum = sourceRow.querySelectorAll('td input')[1]?.value || '';
+      const resSekarang = targetRow.querySelectorAll('td input')[1]?.value || '';
+      const tglSebelum = sourceRow.querySelectorAll('td input')[0]?.value || '';
+      const tglSekarang = targetRow.querySelectorAll('td input')[0]?.value || '';
+
+      if (!resSebelum || !resSekarang || !tglSebelum || !tglSekarang) return;
+
+      const tglSebNum = parseInt(tglSebelum.split('/')[0]);
+      const tglSkrNum = parseInt(tglSekarang.split('/')[0]);
+      const resSebNum = parseInt(resSebelum);
+      const resSkrNum = parseInt(resSekarang);
+
+      if (isNaN(tglSebNum) || isNaN(tglSkrNum) || isNaN(resSebNum) || isNaN(resSkrNum)) return;
+
+      const rumusResult = hitungRumusLemah(tglSebNum, tglSkrNum, resSebNum, resSkrNum);
+      tampilkanHasil(targetRow, rumusResult);
+    }
+
+    function recalculateFrom(startingRow) {
+      const tbody = startingRow.parentElement;
+      const allRows = Array.from(tbody.querySelectorAll('tr'));
+      const startIndex = allRows.indexOf(startingRow);
+      for (let i = startIndex; i < allRows.length; i++) {
+        calculateRow(allRows[i]);
+      }
+    }
+
+    function createRow() {
+      const tr = document.createElement("tr");
+      for (let i = 0; i < 14; i++) {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.setAttribute('autocomplete', 'off');
+        if (i === 0) {
+          input.maxLength = 5;
+          input.placeholder = "DD/MM";
+          formatTanggalInput(input);
+        } else if (i === 1) {
+          input.placeholder = "4D";
+          input.maxLength = 4;
+        } else {
+          input.readOnly = true;
+          input.style.backgroundColor = "#f9f9f9";
+        }
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+
+      const actionTd = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Hapus";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.onclick = function () {
+        if (confirm("Hapus baris ini?")) {
+          const row = this.closest('tr');
+          const next = row.nextElementSibling;
+          row.remove();
+          if (next) recalculateFrom(next);
+          saveDataToFirebase();
+        }
+      };
+      actionTd.appendChild(deleteBtn);
+      tr.appendChild(actionTd);
+
+      tr.addEventListener('input', () => {
+        if (tr.querySelector('input[placeholder="4D"]')) {
+          const resInput = tr.querySelector('input[placeholder="4D"]');
+          resInput.value = resInput.value.replace(/[^0-9]/g, '').slice(0, 4);
+        }
+        recalculateFrom(tr);
+      });
+
+      return tr;
+    }
+
+    function saveDataToFirebase() {
+      const market = document.getElementById('marketSelect').value;
+      if (!market) {
+        showStatus("⚠️ Pilih market terlebih dahulu.", false);
+        return;
+      }
+      localStorage.setItem('marketAktif', market);
+
+      try {
+        const table = document.getElementById('kamar10-table');
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const data = rows.map(row => Array.from(row.querySelectorAll("input")).map(inp => inp.value));
+        const db = firebase.database();
+        db.ref(`kamar10/${market}/data`).set(data)
+          .then(() => showStatus("✓ Data disimpan ke Firebase", true))
+          .catch(err => {
+            console.error("Firebase save error:", err);
+            showStatus("✗ Gagal simpan ke Firebase", false);
+          });
+      } catch (error) {
+        console.error("Save error:", error);
+        showStatus("✗ Error saat menyimpan", false);
+      }
+    }
+
+    async function loadDataFromFirebase(market) {
+      if (!market) {
+        const tbody = document.querySelector('#kamar10-table tbody');
+        tbody.innerHTML = "";
+        tbody.appendChild(createRow());
+        return;
+      }
+
+      try {
+        const db = firebase.database();
+        const snapshot = await db.ref(`kamar10/${market}/data`).once('value');
+        const tbody = document.querySelector('#kamar10-table tbody');
+        tbody.innerHTML = "";
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          data.forEach(rowData => {
+            let safeRowData = [...rowData];
+            while (safeRowData.length < 14) safeRowData.push("");
+            if (safeRowData.length > 14) safeRowData = safeRowData.slice(0, 14);
+
+            const tr = createRow();
+            const inputs = tr.querySelectorAll("input");
+            safeRowData.forEach((val, i) => {
+              if (inputs[i]) inputs[i].value = val;
+            });
+            tbody.appendChild(tr);
+          });
+          const allRows = Array.from(tbody.querySelectorAll('tr'));
+          for (let i = 1; i < allRows.length; i++) {
+            calculateRow(allRows[i]);
+          }
+        } else {
+          tbody.appendChild(createRow());
+        }
+      } catch (error) {
+        console.error("Load error:", error);
+        showStatus("✗ Gagal memuat data", false);
+        const tbody = document.querySelector('#kamar10-table tbody');
+        tbody.appendChild(createRow());
+      }
+    }
+
+    // === INISIALISASI ===
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat", false);
+        return;
+      }
+
+      const marketSelect = document.getElementById('marketSelect');
+      const marketStatusEl = document.getElementById('market-status');
+      const addRowBtn = document.getElementById('add-row');
+      const saveBtn = document.getElementById('save-firebase');
+
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif) {
+        marketSelect.value = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+        setTimeout(() => loadDataFromFirebase(marketAktif), 300);
+      } else {
+        marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+        marketStatusEl.style.color = "#f44336";
+        document.querySelector('#kamar10-table tbody').appendChild(createRow());
+      }
+
+      marketSelect.addEventListener('change', () => {
+        const market = marketSelect.value;
+        if (market) {
+          marketStatusEl.textContent = `📊 Market aktif: ${market}`;
+          loadDataFromFirebase(market);
+        }
+      });
+
+      // Pastikan tombol Tambah Baris berfungsi
+      addRowBtn.addEventListener('click', () => {
+        const tbody = document.querySelector('#kamar10-table tbody');
+        if (tbody) {
+          const newRow = createRow();
+          tbody.appendChild(newRow);
+        }
+      });
+
+      saveBtn.addEventListener('click', saveDataToFirebase);
+
+      // Validasi input res 4 digit
+      document.addEventListener('input', (e) => {
+        if (e.target.matches('input[placeholder="4D"]')) {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
