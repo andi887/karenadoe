@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>kamar</title>
   <style>
+    /* ... (CSS TETAP SAMA) ... */
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
       margin: 0;
       padding: 12px;
     }
-
     .container {
       max-width: 600px;
       margin: 0 auto;
@@ -20,14 +20,12 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       padding: 16px;
     }
-
     h1 {
       text-align: center;
       font-size: 1.4em;
       margin: 0 0 20px;
       color: #333;
     }
-
     .alert-local {
       background: #fff3cd;
       border: 1px solid #ffeaa7;
@@ -37,7 +35,6 @@
       margin-bottom: 16px;
       font-size: 0.95em;
     }
-
     .back-home {
       text-align: center;
       margin: 12px 0;
@@ -55,7 +52,6 @@
     .back-home a:hover {
       background: #3367d6;
     }
-
     .global-buttons {
       display: flex;
       gap: 8px;
@@ -105,7 +101,6 @@
     .btn-clear-clones:hover {
       background: #F57C00;
     }
-
     .kamar-instance {
       background: #fafafa;
       border-radius: 10px;
@@ -114,7 +109,6 @@
       position: relative;
       border: 1px solid #eee;
     }
-
     .market-select {
       width: 100%;
       padding: 10px;
@@ -123,11 +117,9 @@
       border-radius: 6px;
       font-size: 16px;
     }
-
     .input-group {
       margin: 10px 0;
     }
-
     label {
       display: block;
       font-weight: bold;
@@ -135,7 +127,6 @@
       color: #555;
       font-size: 0.95em;
     }
-
     input {
       width: 100%;
       padding: 12px;
@@ -144,7 +135,6 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-
     .instance-buttons {
       display: flex;
       gap: 8px;
@@ -175,31 +165,33 @@
     .btn-delete-original {
       display: none;
     }
-
+    .btn-send {
+      background: #00C853;
+      color: white;
+    }
+    .btn-send:hover {
+      background: #009624;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 16px;
       font-size: 15px;
     }
-
     th, td {
       padding: 10px 6px;
       text-align: center;
       border: 1px solid #ddd;
     }
-
     th {
       background-color: #f8f9fa;
       color: #333;
     }
-
     .rumus-tag {
       color: #d32f2f;
       font-weight: bold;
       font-size: 14px;
     }
-
     .status {
       text-align: center;
       color: #e74c3c;
@@ -207,7 +199,6 @@
       margin: 10px 0;
       font-size: 0.95em;
     }
-
     @media (max-width: 480px) {
       .container {
         padding: 10px;
@@ -225,14 +216,6 @@
 <body>
   <div class="container">
     <h1>🔢 kamar</h1>
-
-    <!-- 🔔 PERINGATAN JIKA DIAKSES DARI FILE LOKAL -->
-    <div id="local-warning" class="alert-local" style="display:none;">
-      ⚠️ Kamu membuka file ini secara lokal (<code>file://</code>).<br>
-      <strong>Firebase TIDAK AKAN BERJALAN!</strong><br>
-      Untuk menyimpan data, akses via:<br>
-      <code>https://namagithub.github.io/nomoromosse/fitur4.html</code>
-    </div>
 
     <div class="back-home">
       <a href="index.html">🔙 Kembali ke Beranda</a>
@@ -253,37 +236,17 @@
     <div class="status" id="status"></div>
   </div>
 
-  <script type="module">
-    // 🔍 DETEKSI AKSES FILE LOKAL
-    if (window.location.protocol === 'file:') {
-      document.getElementById('local-warning').style.display = 'block';
-      // Nonaktifkan tombol simpan
-      setTimeout(() => {
-        const saveBtn = document.getElementById('btn-save-all');
-        if (saveBtn) saveBtn.disabled = true;
-      }, 100);
-    }
+  <!-- Firebase (Gunakan config terpusat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "nomoromosse.firebaseapp.com",
-      databaseURL: "https://nomoromosse-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "nomoromosse",
-      storageBucket: "nomoromosse.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
+  <script>
+    // === KONFIGURASI MARKET ===
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong"];
     let instanceCounter = 0;
 
-    // 🔹 DATA & FUNGSI ASLI (TIDAK DIUBAH)
+    // === FUNGSI BANTU (TETAP SAMA) ===
     const shioAngka = {
       1: [1,13,25,37,49,61,73,85,97],
       2: [2,14,26,38,50,62,74,86,98],
@@ -343,7 +306,6 @@
       kamarRumus[angkaKeShio(AS * 10 + EKOR)].add(13);
       kamarRumus[angkaKeShio(getIndex(AS_Lalu) * 10 + getIndex(AS))].add(14);
 
-      // 🔹 Rumus 15, 16, 17
       let str4DLalu6 = empatDLalu.toString().padStart(4, '0');
       let str4DSkr6 = empatDSkr.toString().padStart(4, '0');
       const combined8 = str4DLalu6 + str4DSkr6;
@@ -376,13 +338,7 @@
       setTimeout(() => el.textContent = '', 3000);
     }
 
-    function getFormattedDate() {
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, '0');
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      return `${day}/${month}`;
-    }
-
+    // === BUAT INSTANCE DENGAN TOMBOL KIRIM ===
     function createKamarInstance(isOriginal = false, savedData = null) {
       const currentId = instanceCounter++;
       const div = document.createElement('div');
@@ -455,8 +411,36 @@
         }
       };
 
+      // === TOMBOL KIRIM KE KAMAR10 ===
+      const btnSend = document.createElement('button');
+      btnSend.className = 'btn-send';
+      btnSend.textContent = '📤 Kirim ke kamar10';
+      btnSend.onclick = () => {
+        const market = marketSelect.value;
+        const tglSeb = div.querySelector('.tanggal-sebelum').value.trim();
+        const tglSkr = div.querySelector('.tanggal-sekarang').value.trim();
+        const resSeb = div.querySelector('.result4d-lalu').value.trim();
+        const resSkr = div.querySelector('.result4d-sekarang').value.trim();
+
+        if (!market || !tglSeb || !tglSkr || !resSeb || !resSkr) {
+          showMessage('⚠️ Lengkapi semua input dulu.', true);
+          return;
+        }
+
+        const data = {
+          tglSebelum: tglSeb,
+          tglSekarang: tglSkr,
+          resSebelum: resSeb,
+          resSekarang: resSkr,
+          market: market
+        };
+        localStorage.setItem('kamar10_import', JSON.stringify(data));
+        showMessage('✅ Data dikirim ke kamar10!', false);
+      };
+
       btnGroup.appendChild(btnApply);
       btnGroup.appendChild(btnDelete);
+      btnGroup.appendChild(btnSend);
       div.appendChild(btnGroup);
 
       return div;
@@ -532,26 +516,22 @@
       showMessage('🧹 Semua cloning dihapus.');
     }
 
+    // === SIMPAN & MUAT PER MARKET ===
     async function saveAllToFirebase() {
-      // Cek akses lokal
-      if (window.location.protocol === 'file:') {
-        showMessage('❌ Akses dari file lokal! Buka via GitHub Pages.', true);
-        return;
-      }
-
       const container = document.getElementById('instances-container');
-      const entries = [];
-      const dateStr = getFormattedDate();
-
       const instances = container.querySelectorAll('.kamar-instance');
       if (instances.length === 0) {
         showMessage('⚠️ Tidak ada data untuk disimpan.', true);
         return;
       }
 
+      const db = firebase.database();
+      const promises = [];
+
       instances.forEach(inst => {
-        const instanceId = inst.dataset.instanceId;
         const market = inst.querySelector('.market-select').value;
+        if (!market) return;
+
         const seb = inst.querySelector('.tanggal-sebelum').value.trim();
         const skr = inst.querySelector('.tanggal-sekarang').value.trim();
         const lalu = inst.querySelector('.result4d-lalu').value.trim();
@@ -559,51 +539,44 @@
 
         const hasil = {};
         for (let i = 1; i <= 12; i++) {
-          const cell = document.getElementById(`rumus-${instanceId}-${i}`);
+          const cell = document.getElementById(`rumus-${inst.dataset.instanceId}-${i}`);
           if (cell && cell.textContent !== "—") {
             hasil[i] = cell.textContent;
           }
         }
 
-        entries.push({
+        const data = {
           market,
           tanggalSebelum: seb,
           tanggalSekarang: skr,
           result4DLalu: lalu,
           result4D: skr4D,
           hasil,
-          date: dateStr
-        });
+          savedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        promises.push(db.ref(`generator_2d/kamar/${market}/latest`).set(data));
       });
 
-      const saveId = 'kamar-' + Date.now();
-      const saveRef = ref(db, `generator_2d/kamar/${saveId}`);
       try {
-        await set(saveRef, { entries, savedAt: Date.now() });
-        showMessage('✅ Data tersimpan ke Firebase.');
+        await Promise.all(promises);
+        showMessage('✅ Data tersimpan per market ke Firebase.');
       } catch (err) {
-        console.error('Firebase save error:', err);
-        let msg = '❌ Gagal simpan ke Firebase.';
-        if (err.code === 'PERMISSION_DENIED') {
-          msg += ' Periksa Firebase Rules.';
-        }
-        showMessage(msg, true);
+        console.error('Save error:', err);
+        showMessage('❌ Gagal simpan ke Firebase.', true);
       }
     }
 
     async function clearAllFromFirebase() {
-      if (window.location.protocol === 'file:') {
-        showMessage('❌ Akses dari file lokal! Buka via GitHub Pages.', true);
-        return;
-      }
       if (!confirm('Yakin hapus semua data kamar di Firebase?')) return;
       try {
-        await remove(ref(db, 'generator_2d/kamar'));
-        showMessage('🗑️ Semua data Firebase dihapus.');
+        const db = firebase.database();
+        await db.ref('generator_2d/kamar').remove();
+        showMessage('🗑️ Semua data dihapus.');
         loadFromFirebase();
       } catch (err) {
-        console.error('Firebase remove error:', err);
-        showMessage('❌ Gagal hapus data Firebase.', true);
+        console.error('Remove error:', err);
+        showMessage('❌ Gagal hapus data.', true);
       }
     }
 
@@ -611,37 +584,25 @@
       const container = document.getElementById('instances-container');
       container.innerHTML = '';
 
+      // Baca market aktif
+      const marketAktif = localStorage.getItem('marketAktif') || 'Cambodia';
+
       try {
-        const dbRef = ref(db, 'generator_2d/kamar');
-        const snapshot = await get(dbRef);
+        const db = firebase.database();
+        const snapshot = await db.ref(`generator_2d/kamar/${marketAktif}/latest`).once('value');
 
-        if (!snapshot.exists()) {
-          const first = createKamarInstance(true);
-          container.appendChild(first);
-          return;
-        }
-
-        const data = snapshot.val();
-        let latestEntry = null;
-        for (const key in data) {
-          if (data[key].savedAt && (!latestEntry || data[key].savedAt > latestEntry.savedAt)) {
-            latestEntry = data[key];
-          }
-        }
-
-        if (latestEntry && latestEntry.entries && Array.isArray(latestEntry.entries)) {
-          latestEntry.entries.forEach((entry, idx) => {
-            const inst = createKamarInstance(idx === 0, entry);
-            container.appendChild(inst);
-          });
-          showMessage(`✅ Memuat ${latestEntry.entries.length} instans dari Firebase.`);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const inst = createKamarInstance(true, data);
+          container.appendChild(inst);
+          showMessage(`✅ Data untuk ${marketAktif} dimuat.`);
         } else {
           const first = createKamarInstance(true);
           container.appendChild(first);
         }
       } catch (err) {
-        console.error('Gagal muat data:', err);
-        showMessage('⚠️ Gagal muat data dari Firebase.', true);
+        console.error('Load error:', err);
+        showMessage('⚠️ Gagal muat data.', true);
         const first = createKamarInstance(true);
         container.appendChild(first);
       }
@@ -649,7 +610,6 @@
 
     function init() {
       loadFromFirebase();
-
       document.getElementById('btn-clone').addEventListener('click', cloneInstance);
       document.getElementById('btn-clear-clones').addEventListener('click', clearAllClones);
       document.getElementById('btn-apply-all').addEventListener('click', terapkanSemuaRumus);
