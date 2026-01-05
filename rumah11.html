@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <meta name="terrain=1.0">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>rumah11</title>
   <style>
@@ -188,15 +189,22 @@
       <div id="status" class="status"></div>
     </div>
 
-    <!-- Sumber Data (5 kolom) -->
+    <!-- 6 SUMBER DATA -->
     <div id="sources-container"></div>
 
-    <!-- Rangkuman Frekuensi -->
+    <!-- RANGKUMAN FREKUENSI -->
     <div class="source-box">
       <div class="source-header">
         <div class="source-title">📌 Rangkuman Berdasarkan Frekuensi</div>
       </div>
       <div id="rangkuman-frekuensi">
+        <div class="summary-group" id="seri6x">
+          <div class="summary-title">
+            Seri 6x <span>6 sumber</span>
+            <button class="btn-salin" data-target="seri6x">Salin</button>
+          </div>
+          <div class="source-content">-</div>
+        </div>
         <div class="summary-group" id="seri5x">
           <div class="summary-title">
             Seri 5x <span>5 sumber</span>
@@ -235,7 +243,10 @@
   <script src="./config-firebase.js"></script>
 
   <script>
-    const MAX_SOURCES = 5;
+    const MAX_SOURCES = 6;
+    const SOURCE_NAMES = [
+      "Jalur", "Dasar", "Filter", "GanjilGenap", "BesarKecil", "Tardal"
+    ];
     let selectedMarket = null;
 
     function showStatus(text, isError = false) {
@@ -282,15 +293,16 @@
         }
       }
 
-      const groups = { 5: [], 4: [], 3: [], 2: [] };
+      // Kelompokkan 2x sampai 6x
+      const groups = { 6: [], 5: [], 4: [], 3: [], 2: [] };
       for (const num of all2D) {
         const count = freq[num];
-        if (count >= 2 && count <= 5) {
+        if (count >= 2 && count <= 6) {
           groups[count].push(num);
         }
       }
 
-      [5,4,3,2].forEach(level => {
+      [6,5,4,3,2].forEach(level => {
         const list = groups[level].sort();
         const text = list.length ? list.join('*') + '#' : '-';
         document.querySelector(`#seri${level}x .source-content`).textContent = text;
@@ -298,11 +310,12 @@
     }
 
     function buatKolomSumber(index) {
+      const name = SOURCE_NAMES[index - 1] || `Sumber ${index}`;
       const div = document.createElement('div');
       div.className = 'source-box';
       div.innerHTML = `
         <div class="source-header">
-          <div class="source-title">Sumber ${index}</div>
+          <div class="source-title">${name}</div>
           <button class="btn-salin" data-source="${index}">Salin</button>
         </div>
         <textarea id="source-input-${index}" placeholder="Contoh: 01*23*45#"></textarea>
@@ -310,7 +323,7 @@
       return div;
     }
 
-    // === FUNGSI BARU: MUAT DATA DARI FIREBASE ===
+    // === MUAT DATA DARI FIREBASE ===
     async function loadDataFromFirebase(market) {
       if (!market) return;
       try {
@@ -319,28 +332,24 @@
         const data = snapshot.val();
 
         if (data && data.sumber) {
-          // Isi ulang input
           for (let i = 1; i <= MAX_SOURCES; i++) {
             const inputEl = document.getElementById(`source-input-${i}`);
             if (inputEl) inputEl.value = data.sumber[i] || '';
           }
-
-          // Tampilkan hasil jika ada
           if (data.hasil) {
-            [5,4,3,2].forEach(level => {
+            [6,5,4,3,2].forEach(level => {
               const el = document.querySelector(`#seri${level}x .source-content`);
               if (el) el.textContent = data.hasil[`seri${level}x`] || '-';
             });
           } else {
-            analisisFrekuensi(); // hitung ulang
+            analisisFrekuensi();
           }
         }
       } catch (err) {
-        console.error("Gagal muat data:", err);
+        console.error("Gagal muat ", err);
       }
     }
 
-    // === SIMPAN DATA ===
     function saveDataToFirebase(market) {
       if (!market) return showStatus("⚠️ Pilih market dulu.", true);
       
@@ -349,9 +358,8 @@
         sumber[i] = document.getElementById(`source-input-${i}`).value;
       }
 
-      // Simpan juga hasil analisis terbaru
       const hasil = {};
-      [5,4,3,2].forEach(level => {
+      [6,5,4,3,2].forEach(level => {
         hasil[`seri${level}x`] = document.querySelector(`#seri${level}x .source-content`).textContent;
       });
 
@@ -381,7 +389,7 @@
       const btnSimpan = document.getElementById('btnSimpan');
       const sourcesContainer = document.getElementById('sources-container');
 
-      // Buat 5 kolom sumber
+      // Buat 6 kolom sumber
       for (let i = 1; i <= MAX_SOURCES; i++) {
         sourcesContainer.appendChild(buatKolomSumber(i));
       }
@@ -407,6 +415,8 @@
         selectedMarket = marketAktif;
         document.getElementById('market-status').textContent = `📊 Market aktif: ${marketAktif}`;
         loadDataFromFirebase(marketAktif);
+      } else {
+        document.getElementById('market-status').textContent = "⚠️ Pilih market terlebih dahulu.";
       }
 
       marketSelect.addEventListener('change', () => {
@@ -421,7 +431,7 @@
       btnGenerate.addEventListener('click', () => {
         analisisFrekuensi();
         if (selectedMarket) {
-          saveDataToFirebase(selectedMarket); // opsional: simpan otomatis setelah analisis
+          saveDataToFirebase(selectedMarket);
         }
       });
 
