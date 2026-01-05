@@ -310,6 +310,66 @@
       return div;
     }
 
+    // === FUNGSI BARU: MUAT DATA DARI FIREBASE ===
+    async function loadDataFromFirebase(market) {
+      if (!market) return;
+      try {
+        const db = firebase.database();
+        const snapshot = await db.ref(`rumah11/${market}`).once('value');
+        const data = snapshot.val();
+
+        if (data && data.sumber) {
+          // Isi ulang input
+          for (let i = 1; i <= MAX_SOURCES; i++) {
+            const inputEl = document.getElementById(`source-input-${i}`);
+            if (inputEl) inputEl.value = data.sumber[i] || '';
+          }
+
+          // Tampilkan hasil jika ada
+          if (data.hasil) {
+            [5,4,3,2].forEach(level => {
+              const el = document.querySelector(`#seri${level}x .source-content`);
+              if (el) el.textContent = data.hasil[`seri${level}x`] || '-';
+            });
+          } else {
+            analisisFrekuensi(); // hitung ulang
+          }
+        }
+      } catch (err) {
+        console.error("Gagal muat data:", err);
+      }
+    }
+
+    // === SIMPAN DATA ===
+    function saveDataToFirebase(market) {
+      if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+      
+      const sumber = {};
+      for (let i = 1; i <= MAX_SOURCES; i++) {
+        sumber[i] = document.getElementById(`source-input-${i}`).value;
+      }
+
+      // Simpan juga hasil analisis terbaru
+      const hasil = {};
+      [5,4,3,2].forEach(level => {
+        hasil[`seri${level}x`] = document.querySelector(`#seri${level}x .source-content`).textContent;
+      });
+
+      const data = {
+        sumber,
+        hasil,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      firebase.database().ref(`rumah11/${market}`).set(data)
+        .then(() => showStatus("✅ Tersimpan ke cloud!", false))
+        .catch(err => {
+          console.error(err);
+          showStatus("❌ Gagal simpan.", true);
+        });
+    }
+
+    // === INISIALISASI ===
     document.addEventListener('DOMContentLoaded', () => {
       if (!firebase.apps.length) {
         showStatus("⚠️ Firebase tidak dimuat.", true);
@@ -321,11 +381,12 @@
       const btnSimpan = document.getElementById('btnSimpan');
       const sourcesContainer = document.getElementById('sources-container');
 
+      // Buat 5 kolom sumber
       for (let i = 1; i <= MAX_SOURCES; i++) {
         sourcesContainer.appendChild(buatKolomSumber(i));
       }
 
-      // Salin sumber
+      // Salin
       document.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-salin')) {
           if (e.target.hasAttribute('data-source')) {
@@ -339,12 +400,13 @@
         }
       });
 
-      // Market
+      // Market aktif
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
         document.getElementById('market-status').textContent = `📊 Market aktif: ${marketAktif}`;
+        loadDataFromFirebase(marketAktif);
       }
 
       marketSelect.addEventListener('change', () => {
@@ -352,33 +414,23 @@
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           document.getElementById('market-status').textContent = `📊 Market aktif: ${selectedMarket}`;
+          loadDataFromFirebase(selectedMarket);
         }
       });
 
-      btnGenerate.addEventListener('click', analisisFrekuensi);
+      btnGenerate.addEventListener('click', () => {
+        analisisFrekuensi();
+        if (selectedMarket) {
+          saveDataToFirebase(selectedMarket); // opsional: simpan otomatis setelah analisis
+        }
+      });
 
       btnSimpan.addEventListener('click', () => {
-        if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", true);
-        
-        const data = {};
-        for (let i = 1; i <= MAX_SOURCES; i++) {
-          data[`sumber${i}`] = document.getElementById(`source-input-${i}`).value;
+        if (selectedMarket) {
+          saveDataToFirebase(selectedMarket);
+        } else {
+          showStatus("⚠️ Pilih market terlebih dahulu.", true);
         }
-
-        const hasil = {};
-        [5,4,3,2].forEach(level => {
-          hasil[`seri${level}x`] = document.querySelector(`#seri${level}x .source-content`).textContent;
-        });
-
-        data.hasil = hasil;
-        data.timestamp = firebase.database.ServerValue.TIMESTAMP;
-
-        firebase.database().ref(`rumah11/${selectedMarket}`).set(data)
-          .then(() => showStatus("✅ Tersimpan ke cloud!", false))
-          .catch(err => {
-            console.error(err);
-            showStatus("❌ Gagal simpan.", true);
-          });
       });
     });
   </script>
