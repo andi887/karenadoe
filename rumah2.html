@@ -152,7 +152,7 @@
     }
     select {
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       background-size: 16px;
@@ -163,6 +163,21 @@
       font-weight: bold;
       color: var(--accent);
       margin-bottom: 14px;
+    }
+    .summary-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .summary-content {
+      background: #0c1220;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 30px;
     }
   </style>
 </head>
@@ -187,6 +202,7 @@
           <option value="SGP">SGP</option>
           <option value="Taiwan">Taiwan</option>
           <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
         </select>
       </div>
 
@@ -221,15 +237,30 @@
       <h3>Data Tersimpan</h3>
       <p><em>Pilih market untuk memuat data.</em></p>
     </div>
+
+    <!-- BLOK RANGKUMAN AKHIR -->
+    <div class="card summary-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3>Rangkuman: Dasar Kuat (Bukan Lemah)</h3>
+        <button class="btn-secondary" id="btnSalinRangkuman" style="padding: 6px 12px; font-size: 0.9rem;">Salin</button>
+      </div>
+      <div class="summary-content" id="rangkumanTidakLemah">Klik "Cari" untuk menghasilkan rangkuman.</div>
+    </div>
   </div>
 
-  <!-- Firebase SDK - DIPERBAIKI: HAPUS SPASI -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // === LOGIKA DASAR LEMAH (TIDAK DIUBAH) ===
+    // === FUNGSI BANTU ===
+    function hitungDasar2D(duaD) {
+      let total = duaD < 10 ? duaD : Math.floor(duaD / 10) + (duaD % 10);
+      while (total >= 10) total = Math.floor(total / 10) + (total % 10);
+      return total === 0 ? 9 : total;
+    }
+
     function SeededRandom(seed) {
       this.seed = seed % 2147483647;
       if (this.seed <= 0) this.seed += 2147483646;
@@ -259,7 +290,6 @@
 
     const fullWeakMap = generateFullWeakMap();
     let savedData = {};
-    let current2D = null;
     let selectedMarket = null;
 
     // === UTILITAS ===
@@ -267,6 +297,15 @@
       const el = document.getElementById('status');
       el.textContent = text;
       el.className = "status " + type;
+    }
+
+    function salinTeks(teks) {
+      if (!teks || teks === '-' || teks.includes('Klik "Cari"')) return showStatus("ℹ️ Tidak ada data.", true);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          showStatus("✅ Disalin!", false);
+        }).catch(() => showStatus("❌ Gagal salin.", true));
+      }
     }
 
     function renderSavedList(market) {
@@ -295,7 +334,6 @@
       document.getElementById('show2D').textContent = key;
       document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
       document.getElementById('resultBox').style.display = 'block';
-      current2D = key;
       showStatus(`✅ Data ${key} dimuat.`, "success");
     };
 
@@ -304,7 +342,6 @@
       return resultSebelum[1] + resultSekarang[1];
     }
 
-    // === MUAT 2 RES TERAKHIR DARI rumah1 ===
     async function loadLatestTwoResFromRumah1(database, market) {
       if (!market) return;
       try {
@@ -314,7 +351,6 @@
           showStatus("ℹ️ Data rumah1 kurang dari 2 baris.", "error");
           return;
         }
-        // Ambil hanya baris dengan res valid
         const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
         if (validRows.length < 2) {
           showStatus("ℹ️ Kurang dari 2 result valid di rumah1.", "error");
@@ -331,7 +367,17 @@
       }
     }
 
-    // === INISIALISASI UTAMA ===
+    async function loadSavedData(database, market) {
+      try {
+        const snapshot = await database.ref(`rumah2/${market}`).once('value');
+        savedData = snapshot.val() || {};
+        renderSavedList(market);
+      } catch (err) {
+        console.warn("Gagal muat data tersimpan:", err);
+      }
+    }
+
+    // === INISIALISASI ===
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
         showStatus("⚠️ Firebase tidak dimuat.", "error");
@@ -347,6 +393,7 @@
       const btnSimpan = document.getElementById('btnSimpan');
       const btnHapus = document.getElementById('btnHapus');
       const btnMuatDariRumah1 = document.getElementById('btnMuatDariRumah1');
+      const btnSalinRangkuman = document.getElementById('btnSalinRangkuman');
       const marketStatusEl = document.getElementById('market-status');
 
       [resultSebelum, resultSekarang].forEach(el => {
@@ -355,15 +402,18 @@
         });
       });
 
-      // Baca market aktif dari localStorage
+      btnSalinRangkuman.addEventListener('click', () => {
+        salinTeks(document.getElementById('rangkumanTidakLemah').textContent);
+      });
+
       const marketAktif = localStorage.getItem('marketAktif');
       if (marketAktif) {
         marketSelect.value = marketAktif;
         selectedMarket = marketAktif;
         marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
-        loadLatestData(database, marketAktif);
+        loadSavedData(database, marketAktif);
       } else {
-        marketStatusEl.textContent = "⚠️ Tidak ada market aktif. Kembali ke beranda untuk pilih.";
+        marketStatusEl.textContent = "⚠️ Tidak ada market aktif.";
         marketStatusEl.style.color = "#ef4444";
       }
 
@@ -372,28 +422,23 @@
         if (selectedMarket) {
           localStorage.setItem('marketAktif', selectedMarket);
           marketStatusEl.textContent = `📊 Market aktif: ${selectedMarket}`;
-          loadLatestData(database, selectedMarket);
+          loadSavedData(database, selectedMarket);
         } else {
           marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
           document.getElementById('savedList').innerHTML = '<h3>Data Tersimpan</h3><p><em>Pilih market untuk memuat data.</em></p>';
           savedData = {};
-          current2D = null;
         }
       });
 
-      // Muat dari rumah1
       btnMuatDariRumah1.addEventListener('click', () => {
-        if (!selectedMarket) {
-          showStatus("⚠️ Pilih market terlebih dahulu.", "error");
-          return;
-        }
+        if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", "error");
         loadLatestTwoResFromRumah1(database, selectedMarket);
       });
 
-      // === SISA LOGIKA (Cari, Simpan, Edit, Hapus) TETAP SAMA ===
+      // === LOGIKA UTAMA: HANYA BERDASARKAN HASIL GENERATOR SAAT INI ===
       btnCari.addEventListener('click', () => {
         const market = marketSelect.value;
-        if (!market) return showStatus("⚠️ Pilih market terlebih dahulu.", "error");
+        if (!market) return showStatus("⚠️ Pilih market.", "error");
         const r1 = resultSebelum.value.trim();
         const r2 = resultSekarang.value.trim();
         if (r1.length !== 4 || r2.length !== 4) return showStatus("⚠️ Masukkan dua result 4D.", "error");
@@ -404,76 +449,73 @@
         document.getElementById('show2D').textContent = key2D;
         document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
         document.getElementById('resultBox').style.display = 'block';
-        current2D = key2D;
         selectedMarket = market;
         showStatus("✅ Dasar lemah siap.", "success");
+
+        // === HITUNG RANGKUMAN DASAR KUAT ===
+        const dasarLemah = new Set([d1, d2]);
+        const semua2D = [];
+        for (let i = 0; i <= 99; i++) {
+          const num = i.toString().padStart(2, '0');
+          const dasar = hitungDasar2D(i);
+          if (!dasarLemah.has(dasar)) {
+            semua2D.push(num);
+          }
+        }
+        const teks = semua2D.length ? semua2D.join('*') + '#' : '-';
+        document.getElementById('rangkumanTidakLemah').textContent = teks;
+      });
+
+      // === SIMPAN/EDIT/HAPUS (HANYA UNTUK HISTORI, TIDAK PENGARUHI RANGKUMAN) ===
+      btnSimpan.addEventListener('click', () => {
+        if (!document.getElementById('show2D').textContent || !selectedMarket) {
+          return showStatus("⚠️ Tidak ada hasil untuk disimpan.", "error");
+        }
+        const key2D = document.getElementById('show2D').textContent;
+        const dasarText = document.getElementById('showDasar').textContent;
+        const [d1, d2] = dasarText.split(' & ').map(Number);
+        firebase.database().ref(`rumah2/${selectedMarket}/${key2D}`).set([d1, d2])
+          .then(() => {
+            savedData[key2D] = [d1, d2];
+            renderSavedList(selectedMarket);
+            showStatus("✅ Tersimpan ke cloud!", "success");
+          })
+          .catch(err => showStatus("❌ Gagal simpan.", "error"));
       });
 
       btnEdit.addEventListener('click', () => {
-        if (!current2D || !selectedMarket) return showStatus("ℹ️ Tidak ada data untuk diedit.", "error");
-        const newData = prompt(`Edit dasar lemah untuk ${current2D} (format: d1,d2)`);
+        const key2D = document.getElementById('show2D').textContent;
+        if (!key2D || !selectedMarket) return showStatus("ℹ️ Tidak ada data.", "error");
+        const newData = prompt(`Edit dasar lemah untuk ${key2D} (format: d1,d2)`);
         if (newData) {
-          const parts = newData.split(',').map(p => p.trim());
-          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-            const [d1, d2] = parts.map(Number);
-            if (d1 >= 1 && d1 <= 9 && d2 >= 1 && d2 <= 9 && d1 !== d2) {
-              database.ref(`rumah2/${selectedMarket}/${current2D}`).set([d1, d2])
-                .then(() => {
-                  document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
-                  savedData[current2D] = [d1, d2];
-                  renderSavedList(selectedMarket);
-                  showStatus("✅ Data diperbarui.", "success");
-                });
-            } else {
-              alert("Nilai harus 1–9 dan berbeda.");
-            }
+          const [d1, d2] = newData.split(',').map(s => parseInt(s.trim()));
+          if (d1 >= 1 && d1 <= 9 && d2 >= 1 && d2 <= 9 && d1 !== d2) {
+            firebase.database().ref(`rumah2/${selectedMarket}/${key2D}`).set([d1, d2])
+              .then(() => {
+                document.getElementById('showDasar').textContent = `${d1} & ${d2}`;
+                savedData[key2D] = [d1, d2];
+                renderSavedList(selectedMarket);
+                showStatus("✅ Diperbarui.", "success");
+              });
+          } else {
+            alert("Dasar harus 1–9 dan berbeda.");
           }
         }
       });
 
-      btnSimpan.addEventListener('click', () => {
-        if (!current2D || !selectedMarket) return showStatus("⚠️ Tidak ada hasil untuk disimpan.", "error");
-        const [d1, d2] = fullWeakMap[current2D];
-        database.ref(`rumah2/${selectedMarket}/${current2D}`).set([d1, d2])
-          .then(() => {
-            savedData[current2D] = [d1, d2];
-            showStatus("✅ Tersimpan ke cloud!", "success");
-            renderSavedList(selectedMarket);
-          })
-          .catch(err => {
-            console.error("Simpan error:", err);
-            showStatus("❌ Gagal simpan: cek koneksi.", "error");
-          });
-      });
-
       btnHapus.addEventListener('click', () => {
-        if (!current2D || !selectedMarket || !savedData[current2D]) return showStatus("ℹ️ Tidak ada data cloud untuk dihapus.", "error");
-        if (!confirm(`Hapus ${current2D} dari ${selectedMarket}?`)) return;
-        database.ref(`rumah2/${selectedMarket}/${current2D}`).remove()
+        const key2D = document.getElementById('show2D').textContent;
+        if (!key2D || !savedData[key2D]) return showStatus("ℹ️ Tidak ada data cloud.", "error");
+        if (!confirm(`Hapus ${key2D}?`)) return;
+        firebase.database().ref(`rumah2/${selectedMarket}/${key2D}`).remove()
           .then(() => {
-            delete savedData[current2D];
-            current2D = null;
-            document.getElementById('resultBox').style.display = 'none';
-            showStatus("🗑️ Data dihapus.", "success");
+            delete savedData[key2D];
             renderSavedList(selectedMarket);
+            showStatus("🗑️ Dihapus.", "success");
           })
-          .catch(err => {
-            console.error("Hapus error:", err);
-            showStatus("❌ Gagal hapus.", "error");
-          });
+          .catch(err => showStatus("❌ Gagal hapus.", "error"));
       });
     });
-
-    async function loadLatestData(database, market) {
-      try {
-        const snapshot = await database.ref(`rumah2/${market}`).once('value');
-        savedData = snapshot.val() || {};
-        renderSavedList(market);
-      } catch (err) {
-        console.warn("Gagal muat data rumah2:", err);
-        showStatus("⚠️ Gagal muat data rumah2.", "error");
-      }
-    }
   </script>
 </body>
 </html>
