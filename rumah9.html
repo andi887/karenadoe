@@ -265,7 +265,7 @@
 
     function parseDasarParts(input) {
       if (!input.trim()) return [];
-      return input.split('*').map(s => s.trim().replace(/\D/g, ''))
+      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
                    .filter(s => s !== '')
                    .map(s => parseInt(s, 10))
                    .filter(n => !isNaN(n) && n >= 1 && n <= 9);
@@ -273,7 +273,7 @@
 
     function parse2DLemah(input) {
       if (!input.trim()) return new Set();
-      const items = input.split('/').map(s => s.trim());
+      const items = input.split('*').map(s => s.trim());
       const valid2D = [];
       for (const item of items) {
         if (/^\d{2}$/.test(item)) {
@@ -427,8 +427,8 @@
           <input type="text" data-field="F" placeholder="Contoh: 2 atau 2/5/7">
         </div>
         <div class="form-group">
-          <label>G. 2D Lemah (pisah dengan /)</label>
-          <input type="text" data-field="G" placeholder="Contoh: 35/27/59">
+          <label>G. 2D Lemah (pisah dengan *)</label>
+          <input type="text" data-field="G" placeholder="Contoh: 35*27*59">
         </div>
 
         <div class="btn-group">
@@ -643,3 +643,4 @@
 </body>
 
 </html>
+
