@@ -265,7 +265,7 @@
 
     function parseDasarParts(input) {
       if (!input.trim()) return [];
-      return input.split('/').map(s => s.trim().replace(/\D/g, ''))
+      return input.split('*').map(s => s.trim().replace(/\D/g, ''))
                    .filter(s => s !== '')
                    .map(s => parseInt(s, 10))
                    .filter(n => !isNaN(n) && n >= 1 && n <= 9);
@@ -641,4 +641,5 @@
     });
   </script>
 </body>
+
 </html>
