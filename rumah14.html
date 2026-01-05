@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rumah14 — Prediksi Pola Paritas</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --ok: #10b981;
+      --warn: #fbbf24;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin: 0 0 20px;
+      letter-spacing: 0.2px;
+    }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-secondary { background: #0c1220; color: var(--text); border: 1px solid rgba(255,255,255,0.08); }
+    .btn-salin { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; padding: 6px 12px; font-size: 0.9rem; }
+    .status {
+      text-align: center;
+      min-height: 24px;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .success { color: var(--ok); }
+    .error { color: #ef4444; }
+    .result-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .result-item {
+      margin: 12px 0;
+      padding: 10px;
+      background: #0c1220;
+      border-radius: 8px;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .prediksi-akhir {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--warn);
+      margin: 16px 0;
+    }
+    .summary-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .summary-content {
+      background: #0c1220;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <h1>rumah14 — Prediksi Pola Paritas</h1>
+    <div id="market-status"></div>
+
+    <div class="card">
+      <label for="marketSelect">Pilih Market</label>
+      <select id="marketSelect">
+        <option value="">-- Pilih Market --</option>
+        <option value="Cambodia">Cambodia</option>
+        <option value="Sidney">Sidney</option>
+        <option value="China">China</option>
+        <option value="Japan">Japan</option>
+        <option value="SGP">SGP</option>
+        <option value="Taiwan">Taiwan</option>
+        <option value="Hongkong">Hongkong</option>
+        <option value="Nusa">Nusa</option>
+      </select>
+
+      <div style="margin: 16px 0;">
+        <label>Data Harian (4 result terakhir, pisah dengan koma)</label>
+        <input type="text" id="inputHarian" placeholder="Contoh: 1234,5678,9012,3456" />
+      </div>
+
+      <div style="margin: 16px 0;">
+        <label>Data Hari Khusus (3 result hari yang sama, pisah dengan koma)</label>
+        <input type="text" id="inputKhusus" placeholder="Contoh: 1234,5678,9012" />
+      </div>
+
+      <div class="btn-row">
+        <button id="btnPrediksi">🔍 Prediksi Pola</button>
+        <button id="btnSalinHasil" class="btn-salin">Salin Hasil</button>
+        <button id="btnSimpan" class="btn-secondary">💾 Simpan ke Cloud</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none;">
+      <div class="prediksi-akhir" id="prediksiAkhir">-</div>
+      
+      <div class="result-item">
+        <div class="result-header">Frekuensi Pola</div>
+        <div>Harian: <strong id="freqHarian">-</strong> | Khusus: <strong id="freqKhusus">-</strong></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-header">Dominasi Kepala-Ekor</div>
+        <div>Harian: <strong id="domHarian">-</strong> | Khusus: <strong id="domKhusus">-</strong></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-header">Tren Terkini</div>
+        <div>Harian: <strong id="trenHarian">-</strong> | Khusus: <strong id="trenKhusus">-</strong></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-header">Semua Hasil (6)</div>
+        <div id="semuaHasil">-</div>
+      </div>
+    </div>
+
+    <!-- RANGKUMAN -->
+    <div class="summary-box" id="summaryBox" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3>Rangkuman: Semua 2D Berdasarkan Prediksi</h3>
+        <button class="btn-salin" id="btnSalinRangkuman">Salin</button>
+      </div>
+      <div class="summary-content" id="rangkuman2D">-</div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    // === GENERATE 2D BERDASARKAN POLA ===
+    function generate2DByPola(pola) {
+      const all2D = [];
+      for (let i = 0; i < 100; i++) {
+        const num = i.toString().padStart(2, '0');
+        const k = parseInt(num[0]);
+        const e = parseInt(num[1]);
+        const kg = k % 2 === 1;
+        const eg = e % 2 === 1;
+        let match = false;
+        if (pola === "GG") match = kg && eg;
+        else if (pola === "EE") match = !kg && !eg;
+        else if (pola === "GE") match = kg && !eg;
+        else if (pola === "EG") match = !kg && eg;
+        if (match) all2D.push(num);
+      }
+      return all2D.length ? all2D.join('*') + '#' : '-';
+    }
+
+    // === 3 RUMUS ===
+    function rumusA(data4D) {
+      const polaList = data4D.map(res => {
+        const k = parseInt(res[2]), e = parseInt(res[3]);
+        const kg = k % 2 === 1, eg = e % 2 === 1;
+        if (kg && eg) return "GG";
+        if (!kg && !eg) return "EE";
+        if (kg && !eg) return "GE";
+        return "EG";
+      });
+      const freq = { GG: 0, EE: 0, GE: 0, EG: 0 };
+      polaList.forEach(p => freq[p]++);
+      return Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : (freq[a] === freq[b] ? a : b));
+    }
+
+    function rumusB(data4D) {
+      let kepalaGanjil = 0, ekorGanjil = 0;
+      data4D.forEach(res => {
+        if (parseInt(res[2]) % 2 === 1) kepalaGanjil++;
+        if (parseInt(res[3]) % 2 === 1) ekorGanjil++;
+      });
+      const n = data4D.length;
+      const kepala = kepalaGanjil > (n - kepalaGanjil) ? 'G' : 'E';
+      const ekor = ekorGanjil > (n - ekorGanjil) ? 'G' : 'E';
+      return kepala + ekor;
+    }
+
+    function rumusC(data4D) {
+      const terbaru = data4D[0];
+      const k = parseInt(terbaru[2]);
+      const e = parseInt(terbaru[3]);
+      const kg = k % 2 === 1;
+      const eg = e % 2 === 1;
+      if (kg && eg) return "GG";
+      if (!kg && !eg) return "EE";
+      if (kg && !eg) return "GE";
+      return "EG";
+    }
+
+    function prediksiPola6Arah(dataHarian, dataHariKhusus) {
+      const harian4 = dataHarian.slice(0, 4).map(r => r.toString().padStart(4, '0'));
+      const khusus3 = dataHariKhusus.slice(0, 3).map(r => r.toString().padStart(4, '0'));
+      const hasil = [
+        rumusA(harian4), rumusA(khusus3),
+        rumusB(harian4), rumusB(khusus3),
+        rumusC(harian4), rumusC(khusus3)
+      ];
+      const vote = {};
+      hasil.forEach(p => vote[p] = (vote[p] || 0) + 1);
+      const sorted = Object.entries(vote).sort((a, b) => b[1] - a[1]);
+      const prediksi = sorted[0][0];
+      const konsensus = sorted[0][1];
+      return { prediksi, konsensus, detail: { freqHarian: hasil[0], freqKhusus: hasil[1], domHarian: hasil[2], domKhusus: hasil[3], trenHarian: hasil[4], trenKhusus: hasil[5], semuaHasil: hasil } };
+    }
+
+    // === UTILITAS ===
+    function showStatus(text, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = "status " + (isError ? "error" : "success");
+    }
+
+    function salinTeks(teks) {
+      if (!teks || teks === '-') return showStatus("ℹ️ Tidak ada data.", true);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => showStatus("✅ Disalin!", false)).catch(() => showStatus("❌ Gagal salin.", true));
+      }
+    }
+
+    // === BARU: MUAT DATA OTOMATIS ===
+    async function loadDataFromFirebase(market) {
+      if (!market) return;
+      try {
+        const snapshot = await firebase.database().ref(`rumah14/${market}`).once('value');
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById('inputHarian').value = data.inputHarian || '';
+          document.getElementById('inputKhusus').value = data.inputKhusus || '';
+          if (data.prediksi && data.rangkuman) {
+            document.getElementById('prediksiAkhir').textContent = data.prediksi;
+            document.getElementById('rangkuman2D').textContent = data.rangkuman;
+            document.getElementById('resultBox').style.display = 'block';
+            document.getElementById('summaryBox').style.display = 'block';
+            // Isi detail jika ada
+            if (data.detail) {
+              document.getElementById('freqHarian').textContent = data.detail.freqHarian || '-';
+              document.getElementById('freqKhusus').textContent = data.detail.freqKhusus || '-';
+              document.getElementById('domHarian').textContent = data.detail.domHarian || '-';
+              document.getElementById('domKhusus').textContent = data.detail.domKhusus || '-';
+              document.getElementById('trenHarian').textContent = data.detail.trenHarian || '-';
+              document.getElementById('trenKhusus').textContent = data.detail.trenKhusus || '-';
+              document.getElementById('semuaHasil').textContent = (data.detail.semuaHasil || []).join(', ');
+            }
+            showStatus("✅ Data sebelumnya dimuat.", false);
+          }
+        }
+      } catch (err) {
+        console.warn("Gagal muat ", err);
+      }
+    }
+
+    // === INISIALISASI ===
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat.", true);
+        return;
+      }
+
+      const marketSelect = document.getElementById('marketSelect');
+      const inputHarian = document.getElementById('inputHarian');
+      const inputKhusus = document.getElementById('inputKhusus');
+      const btnPrediksi = document.getElementById('btnPrediksi');
+      const btnSalinHasil = document.getElementById('btnSalinHasil');
+      const btnSalinRangkuman = document.getElementById('btnSalinRangkuman');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const resultBox = document.getElementById('resultBox');
+      const summaryBox = document.getElementById('summaryBox');
+      const marketStatusEl = document.getElementById('market-status');
+
+      [inputHarian, inputKhusus].forEach(input => {
+        input.addEventListener('input', () => {
+          input.value = input.value.replace(/[^0-9,]/g, '');
+        });
+      });
+
+      // === MUAT OTOMATIS SAAT HALAMAN DIBUKA ===
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif) {
+        marketSelect.value = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+        loadDataFromFirebase(marketAktif);
+      } else {
+        marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+      }
+
+      marketSelect.addEventListener('change', () => {
+        const market = marketSelect.value;
+        if (market) {
+          localStorage.setItem('marketAktif', market);
+          marketStatusEl.textContent = `📊 Market aktif: ${market}`;
+          loadDataFromFirebase(market);
+        }
+      });
+
+      btnPrediksi.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+        const harianStr = inputHarian.value.trim();
+        const khususStr = inputKhusus.value.trim();
+        if (!harianStr || !khususStr) return showStatus("⚠️ Lengkapi kedua input.", true);
+        const dataHarian = harianStr.split(',').filter(x => x.length === 4);
+        const dataKhusus = khususStr.split(',').filter(x => x.length === 4);
+        if (dataHarian.length < 4) return showStatus("⚠️ Data harian minimal 4 result.", true);
+        if (dataKhusus.length < 3) return showStatus("⚠️ Data khusus minimal 3 result.", true);
+        try {
+          const hasil = prediksiPola6Arah(dataHarian, dataKhusus);
+          const prediksiFinal = hasil.prediksi;
+          document.getElementById('prediksiAkhir').textContent = `🎯 Prediksi: ${prediksiFinal} (${hasil.konsensus}/6)`;
+          document.getElementById('freqHarian').textContent = hasil.detail.freqHarian;
+          document.getElementById('freqKhusus').textContent = hasil.detail.freqKhusus;
+          document.getElementById('domHarian').textContent = hasil.detail.domHarian;
+          document.getElementById('domKhusus').textContent = hasil.detail.domKhusus;
+          document.getElementById('trenHarian').textContent = hasil.detail.trenHarian;
+          document.getElementById('trenKhusus').textContent = hasil.detail.trenKhusus;
+          document.getElementById('semuaHasil').textContent = hasil.detail.semuaHasil.join(', ');
+          resultBox.style.display = 'block';
+          document.getElementById('rangkuman2D').textContent = generate2DByPola(prediksiFinal);
+          summaryBox.style.display = 'block';
+          showStatus("✅ Prediksi & rangkuman siap.", false);
+        } catch (err) {
+          console.error(err);
+          showStatus("❌ Error saat memproses.", true);
+        }
+      });
+
+      btnSalinHasil.addEventListener('click', () => {
+        salinTeks(document.getElementById('prediksiAkhir').textContent);
+      });
+
+      btnSalinRangkuman.addEventListener('click', () => {
+        salinTeks(document.getElementById('rangkuman2D').textContent);
+      });
+
+      btnSimpan.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+        // Ambil detail terbaru
+        const hasil = prediksiPola6Arah(
+          inputHarian.value.split(',').filter(x => x.length === 4),
+          inputKhusus.value.split(',').filter(x => x.length === 4)
+        );
+        const data = {
+          inputHarian: inputHarian.value,
+          inputKhusus: inputKhusus.value,
+          prediksi: document.getElementById('prediksiAkhir').textContent,
+          rangkuman: document.getElementById('rangkuman2D').textContent,
+          detail: {
+            freqHarian: hasil.detail.freqHarian,
+            freqKhusus: hasil.detail.freqKhusus,
+            domHarian: hasil.detail.domHarian,
+            domKhusus: hasil.detail.domKhusus,
+            trenHarian: hasil.detail.trenHarian,
+            trenKhusus: hasil.detail.trenKhusus,
+            semuaHasil: hasil.detail.semuaHasil
+          },
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        firebase.database().ref(`rumah14/${market}`).set(data)
+          .then(() => showStatus("✅ Tersimpan ke cloud!", false))
+          .catch(err => showStatus("❌ Gagal simpan.", true));
+      });
+    });
+  </script>
+</body>
+</html>
