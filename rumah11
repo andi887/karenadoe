@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rumah11</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --ok: #10b981;
+      --warn: #fbbf24;
+      --info: #38bdf8;
+      --low: #a78bfa;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin: 0 0 20px;
+      letter-spacing: 0.2px;
+    }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    select, textarea {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-salin, .btn-simpan {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+    .btn-salin { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; }
+    .btn-simpan { background: linear-gradient(90deg, #FF9800, #FFB347); color: #0b1020; }
+    .status {
+      text-align: center;
+      min-height: 24px;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .success { color: var(--ok); }
+    .error { color: #ef4444; }
+    .source-box {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .source-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .source-title {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .source-content {
+      background: #0c1220;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 30px;
+    }
+    .summary-group {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .summary-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-title span {
+      font-size: 0.85em;
+      background: var(--low);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <h1>rumah11 — Penggabung & Analisis Frekuensi</h1>
+    <div id="market-status"></div>
+
+    <div class="card">
+      <div style="margin-bottom: 16px;">
+        <label for="marketSelect">Pilih Market</label>
+        <select id="marketSelect">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnGenerate">🔍 Analisis Frekuensi</button>
+        <button id="btnSimpan" class="btn-simpan">💾 Simpan ke Cloud</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <!-- Sumber Data (5 kolom) -->
+    <div id="sources-container"></div>
+
+    <!-- Rangkuman Frekuensi -->
+    <div class="source-box">
+      <div class="source-header">
+        <div class="source-title">📌 Rangkuman Berdasarkan Frekuensi</div>
+      </div>
+      <div id="rangkuman-frekuensi">
+        <div class="summary-group" id="seri5x">
+          <div class="summary-title">
+            Seri 5x <span>5 sumber</span>
+            <button class="btn-salin" data-target="seri5x">Salin</button>
+          </div>
+          <div class="source-content">-</div>
+        </div>
+        <div class="summary-group" id="seri4x">
+          <div class="summary-title">
+            Seri 4x <span>4 sumber</span>
+            <button class="btn-salin" data-target="seri4x">Salin</button>
+          </div>
+          <div class="source-content">-</div>
+        </div>
+        <div class="summary-group" id="seri3x">
+          <div class="summary-title">
+            Seri 3x <span>3 sumber</span>
+            <button class="btn-salin" data-target="seri3x">Salin</button>
+          </div>
+          <div class="source-content">-</div>
+        </div>
+        <div class="summary-group" id="seri2x">
+          <div class="summary-title">
+            Seri 2x <span>2 sumber</span>
+            <button class="btn-salin" data-target="seri2x">Salin</button>
+          </div>
+          <div class="source-content">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    const MAX_SOURCES = 5;
+    let selectedMarket = null;
+
+    function showStatus(text, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = "status " + (isError ? "error" : "success");
+    }
+
+    function salinTeks(teks) {
+      if (!teks || teks === "-") return showStatus("ℹ️ Tidak ada data.", true);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          showStatus("✅ Disalin!", false);
+        }).catch(() => showStatus("❌ Gagal salin.", true));
+      }
+    }
+
+    function parse2D(input) {
+      if (!input) return new Set();
+      return new Set(
+        input.replace(/#/g, '').split('*').map(s => s.trim()).filter(s => /^\d{2}$/.test(s))
+      );
+    }
+
+    function analisisFrekuensi() {
+      const sources = [];
+      for (let i = 1; i <= MAX_SOURCES; i++) {
+        const input = document.getElementById(`source-input-${i}`).value;
+        const set = parse2D(input);
+        if (set.size > 0) sources.push(set);
+      }
+
+      if (sources.length === 0) {
+        document.querySelectorAll('.summary-group .source-content').forEach(el => el.textContent = '-');
+        return;
+      }
+
+      const freq = {};
+      const all2D = new Set();
+      for (const set of sources) {
+        for (const num of set) {
+          all2D.add(num);
+          freq[num] = (freq[num] || 0) + 1;
+        }
+      }
+
+      const groups = { 5: [], 4: [], 3: [], 2: [] };
+      for (const num of all2D) {
+        const count = freq[num];
+        if (count >= 2 && count <= 5) {
+          groups[count].push(num);
+        }
+      }
+
+      [5,4,3,2].forEach(level => {
+        const list = groups[level].sort();
+        const text = list.length ? list.join('*') + '#' : '-';
+        document.querySelector(`#seri${level}x .source-content`).textContent = text;
+      });
+    }
+
+    function buatKolomSumber(index) {
+      const div = document.createElement('div');
+      div.className = 'source-box';
+      div.innerHTML = `
+        <div class="source-header">
+          <div class="source-title">Sumber ${index}</div>
+          <button class="btn-salin" data-source="${index}">Salin</button>
+        </div>
+        <textarea id="source-input-${index}" placeholder="Contoh: 01*23*45#"></textarea>
+      `;
+      return div;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat.", true);
+        return;
+      }
+
+      const marketSelect = document.getElementById('marketSelect');
+      const btnGenerate = document.getElementById('btnGenerate');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const sourcesContainer = document.getElementById('sources-container');
+
+      for (let i = 1; i <= MAX_SOURCES; i++) {
+        sourcesContainer.appendChild(buatKolomSumber(i));
+      }
+
+      // Salin sumber
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-salin')) {
+          if (e.target.hasAttribute('data-source')) {
+            const idx = e.target.getAttribute('data-source');
+            salinTeks(document.getElementById(`source-input-${idx}`).value);
+          } else if (e.target.hasAttribute('data-target')) {
+            const targetId = e.target.getAttribute('data-target');
+            const teks = document.querySelector(`#${targetId} .source-content`).textContent;
+            salinTeks(teks);
+          }
+        }
+      });
+
+      // Market
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif) {
+        marketSelect.value = marketAktif;
+        selectedMarket = marketAktif;
+        document.getElementById('market-status').textContent = `📊 Market aktif: ${marketAktif}`;
+      }
+
+      marketSelect.addEventListener('change', () => {
+        selectedMarket = marketSelect.value;
+        if (selectedMarket) {
+          localStorage.setItem('marketAktif', selectedMarket);
+          document.getElementById('market-status').textContent = `📊 Market aktif: ${selectedMarket}`;
+        }
+      });
+
+      btnGenerate.addEventListener('click', analisisFrekuensi);
+
+      btnSimpan.addEventListener('click', () => {
+        if (!selectedMarket) return showStatus("⚠️ Pilih market dulu.", true);
+        
+        const data = {};
+        for (let i = 1; i <= MAX_SOURCES; i++) {
+          data[`sumber${i}`] = document.getElementById(`source-input-${i}`).value;
+        }
+
+        const hasil = {};
+        [5,4,3,2].forEach(level => {
+          hasil[`seri${level}x`] = document.querySelector(`#seri${level}x .source-content`).textContent;
+        });
+
+        data.hasil = hasil;
+        data.timestamp = firebase.database.ServerValue.TIMESTAMP;
+
+        firebase.database().ref(`rumah11/${selectedMarket}`).set(data)
+          .then(() => showStatus("✅ Tersimpan ke cloud!", false))
+          .catch(err => {
+            console.error(err);
+            showStatus("❌ Gagal simpan.", true);
+          });
+      });
+    });
+  </script>
+</body>
+</html>
