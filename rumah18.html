@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>rumah15 - 3 Rumus Jarak Lemah</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --danger: #ef4444;
+      --ok: #10b981;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 16px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 8px 16px;
+      background: #3b82f6;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 8px;
+      color: var(--accent);
+    }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #0c1220;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: #1e293b;
+      color: var(--text);
+    }
+    .status {
+      padding: 8px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .success { background: rgba(16, 185, 129, 0.2); color: var(--ok); }
+    .error { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .output-section { margin-top: 16px; }
+    .section-title {
+      font-size: 1.1rem;
+      margin: 0 0 12px;
+      color: var(--accent);
+    }
+    .weak-zone {
+      background: rgba(239, 68, 68, 0.15);
+      border-left: 3px solid var(--danger);
+      padding: 8px;
+      margin: 6px 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .strong-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .strong-item {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--ok);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    #market-status {
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Beranda</a>
+    <h1>rumah15 - 3 Rumus Jarak Lemah</h1>
+    <div class="sub">Input 5 result 4D → analisis 3 rumus jarak lemah → hasilkan kandidat kuat (di luar zona lemah).</div>
+
+    <div class="card">
+      <div id="market-status">📊 Pilih market untuk memuat data.</div>
+      <label for="marketSelect">Pilih Market</label>
+      <select id="marketSelect">
+        <option value="">-- Pilih Market --</option>
+        <option value="SGP">SGP</option>
+        <option value="Sidney">Sidney</option>
+        <option value="Hongkong">Hongkong</option>
+        <option value="Cambodia">Cambodia</option>
+        <option value="China">China</option>
+        <option value="Taiwan">Taiwan</option>
+        <option value="Japan">Japan</option>
+        <option value="Nusa">Nusa</option>
+      </select>
+    </div>
+
+    <div class="card" id="inputSection" style="display:none;">
+      <div class="grid">
+        <div><label for="r1">Result 1 (tertua)</label><input id="r1" type="text" maxlength="4" inputmode="numeric"></div>
+        <div><label for="r2">Result 2</label><input id="r2" type="text" maxlength="4" inputmode="numeric"></div>
+        <div><label for="r3">Result 3</label><input id="r3" type="text" maxlength="4" inputmode="numeric"></div>
+        <div><label for="r4">Result 4</label><input id="r4" type="text" maxlength="4" inputmode="numeric"></div>
+        <div><label for="r5">Result 5 (terbaru)</label><input id="r5" type="text" maxlength="4" inputmode="numeric"></div>
+      </div>
+      <button id="btnProses">Hitung Jarak Lemah</button>
+      <button class="btn-secondary" id="btnClear">Bersihkan</button>
+      <button class="btn-secondary" id="btnSample">Isi Contoh</button>
+      <div id="status" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="card output-section" id="outputSection" style="display:none;">
+      <h2 class="section-title">Hasil Analisis Jarak Lemah</h2>
+      
+      <div class="weak-zone" id="zoneA">Rumus A: ...</div>
+      <div class="weak-zone" id="zoneB">Rumus B: ...</div>
+      <div class="weak-zone" id="zoneC">Rumus C: ...</div>
+      
+      <p><strong>Kandidat Kuat (Di Luar Semua Zona Lemah):</strong></p>
+      <div class="strong-list" id="strongList"></div>
+      
+      <button class="btn-secondary" id="btnSalin">Salin Kandidat Kuat</button>
+      <button id="btnSimpan">Simpan ke Firebase (sabar)</button>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  
+  <script>
+    // === FIREBASE CONFIG (GANTI DENGAN MILIK ANDA) ===
+    const firebaseConfig = {
+      apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+      authDomain: "sabar.firebaseapp.com",
+      databaseURL: "https://sabar-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar",
+      storageBucket: "sabar.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abcdefghijklmnopqrstuvwxyz"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    // === ELEMEN DOM ===
+    const marketSelect = document.getElementById('marketSelect');
+    const inputSection = document.getElementById('inputSection');
+    const outputSection = document.getElementById('outputSection');
+    const statusEl = document.getElementById('status');
+    const marketStatus = document.getElementById('market-status');
+    const inputs = ['r1','r2','r3','r4','r5'].map(id => document.getElementById(id));
+    const zoneAEl = document.getElementById('zoneA');
+    const zoneBEl = document.getElementById('zoneB');
+    const zoneCEl = document.getElementById('zoneC');
+    const strongListEl = document.getElementById('strongList');
+
+    // === FUNGSI RUMUS JARAK LEMAH ===
+    function rumusAJarakLemah(duaD, result4D) {
+      const jarakDari50 = Math.abs(duaD - 50);
+      let min1, max1;
+      if (jarakDari50 > 25) {
+        min1 = Math.max(0, duaD - 15);
+        max1 = Math.min(99, duaD + 15);
+      } else {
+        min1 = 85; max1 = 99;
+      }
+
+      const jumlah = result4D.split('').reduce((a,c) => a + Number(c), 0);
+      const poros = jumlah % 100;
+      const min2 = (poros + 70) % 100;
+      const max2 = (poros + 90) % 100;
+
+      return { min: Math.min(min1, min2), max: Math.max(max1, max2), label: "Rumus A" };
+    }
+
+    function rumusBJarakLemah(duaD) {
+      const shio = (duaD % 12) || 12;
+      const shioToLemah = {
+        1: [80,95], 2: [85,99], 3: [75,90], 4: [70,85],
+        5: [65,80], 6: [60,75], 7: [55,70], 8: [50,65],
+        9: [45,60], 10: [40,55], 11: [35,50], 12: [30,45]
+      };
+      let [min1, max1] = shioToLemah[shio] || [80,95];
+
+      const puluhan = Math.floor(duaD / 10);
+      const satuan = duaD % 10;
+      let min2, max2;
+      if (puluhan <= 4 && satuan <= 4) {
+        min2 = 55; max2 = 99;
+      } else if (puluhan >= 5 && satuan >= 5) {
+        min2 = 0; max2 = 44;
+      } else {
+        min2 = 45; max2 = 54;
+      }
+
+      const min = Math.max(min1, min2);
+      const max = Math.min(max1, max2);
+      if (min > max) {
+        return { min: Math.min(min1, min2), max: Math.max(max1, max2), label: "Rumus B" };
+      }
+      return { min, max, label: "Rumus B" };
+    }
+
+    function rumusCJarakLemah(duaD, historis2D) {
+      if (historis2D.length < 2) {
+        return { min: (duaD + 70) % 100, max: (duaD + 90) % 100, label: "Rumus C" };
+      }
+
+      const duaDLama = historis2D[1];
+      const selisih = (duaD - duaDLama + 100) % 100;
+      const min1 = (selisih + 75) % 100;
+      const max1 = (selisih + 95) % 100;
+
+      const frekuensi = Array(100).fill(0);
+      historis2D.forEach(d => {
+        if (d >= 0 && d <= 99) frekuensi[d]++;
+      });
+
+      let minFrek = 0, minCount = Infinity;
+      for (let start = 0; start <= 90; start++) {
+        const count = frekuensi.slice(start, start + 10).reduce((a,b) => a + b, 0);
+        if (count < minCount) {
+          minCount = count;
+          minFrek = start;
+        }
+      }
+      const min2 = minFrek;
+      const max2 = minFrek + 9;
+
+      return { min: Math.min(min1, min2), max: Math.max(max1, max2), label: "Rumus C" };
+    }
+
+    function formatRange(min, max) {
+      if (min <= max) {
+        return `${String(min).padStart(2,'0')} – ${String(max).padStart(2,'0')}`;
+      } else {
+        return `${String(min).padStart(2,'0')}–99, 00–${String(max).padStart(2,'0')}`;
+      }
+    }
+
+    function diLuarZonaLemah(duaD, zona) {
+      const { min, max } = zona;
+      if (min <= max) {
+        return duaD < min || duaD > max;
+      } else {
+        return duaD > max && duaD < min;
+      }
+    }
+
+    // === SIMPAN & MUAT ===
+    function simpanKeLocalStorage(market, data) {
+      localStorage.setItem(`rumah15_${market}`, JSON.stringify(data));
+    }
+
+    function muatDariLocalStorage(market) {
+      const data = localStorage.getItem(`rumah15_${market}`);
+      return data ? JSON.parse(data) : null;
+    }
+
+    async function simpanKeFirebase(market, data) {
+      try {
+        await database.ref(`rumah15/${market}`).push({
+          ...data,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        showStatus("✅ Berhasil disimpan ke Firebase 'sabar'!", true);
+      } catch (err) {
+        console.error("Firebase error:", err);
+        showStatus("❌ Gagal simpan ke Firebase.", false);
+      }
+    }
+
+    function showStatus(msg, isSuccess = true) {
+      statusEl.textContent = msg;
+      statusEl.className = `status ${isSuccess ? 'success' : 'error'}`;
+      statusEl.style.display = 'block';
+    }
+
+    // === EVENT HANDLERS ===
+    marketSelect.addEventListener('change', () => {
+      const market = marketSelect.value;
+      if (!market) {
+        inputSection.style.display = 'none';
+        outputSection.style.display = 'none';
+        marketStatus.textContent = "📊 Pilih market untuk memuat data.";
+        return;
+      }
+
+      localStorage.setItem('rumah15_marketAktif', market);
+      marketStatus.textContent = `📊 Market aktif: ${market}`;
+      const saved = muatDariLocalStorage(market);
+      if (saved) {
+        inputs.forEach((inp, i) => inp.value = saved.results[i] || '');
+        if (saved.output) tampilkanOutput(saved.output);
+      }
+      inputSection.style.display = 'block';
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const lastMarket = localStorage.getItem('rumah15_marketAktif');
+      if (lastMarket) {
+        marketSelect.value = lastMarket;
+        marketSelect.dispatchEvent(new Event('change'));
+      }
+    });
+
+    document.getElementById('btnProses').addEventListener('click', () => {
+      const market = marketSelect.value;
+      if (!market) return showStatus("⚠️ Pilih market terlebih dahulu.", false);
+
+      const results = inputs.map(inp => inp.value.trim());
+      if (results.some(r => !/^\d{4}$/.test(r))) {
+        return showStatus("⚠️ Semua input harus 4 digit angka.", false);
+      }
+
+      const duaDs = results.map(r => parseInt(r.slice(-2), 10));
+      const duaDTerbaru = duaDs[4];
+      const historis2D = duaDs.slice().reverse(); // [terbaru, ..., tertua]
+
+      // Hitung 3 rumus
+      const rA = rumusAJarakLemah(duaDTerbaru, results[4]);
+      const rB = rumusBJarakLemah(duaDTerbaru);
+      const rC = rumusCJarakLemah(duaDTerbaru, historis2D);
+
+      // Cari kandidat kuat (00–99)
+      const kandidatKuat = [];
+      for (let i = 0; i <= 99; i++) {
+        if (diLuarZonaLemah(i, rA) && diLuarZonaLemah(i, rB) && diLuarZonaLemah(i, rC)) {
+          kandidatKuat.push(String(i).padStart(2, '0'));
+        }
+      }
+
+      const output = { rA, rB, rC, kandidatKuat };
+      simpanKeLocalStorage(market, { results, output });
+      tampilkanOutput(output);
+      showStatus("✅ Analisis jarak lemah selesai.", true);
+    });
+
+    function tampilkanOutput(output) {
+      const { rA, rB, rC, kandidatKuat } = output;
+
+      zoneAEl.innerHTML = `<strong>Rumus A (Pusat + Energi):</strong> ${formatRange(rA.min, rA.max)}`;
+      zoneBEl.innerHTML = `<strong>Rumus B (Shio + Pola):</strong> ${formatRange(rB.min, rB.max)}`;
+      zoneCEl.innerHTML = `<strong>Rumus C (Tren + Historis):</strong> ${formatRange(rC.min, rC.max)}`;
+
+      strongListEl.innerHTML = kandidatKuat
+        .map(x => `<span class="strong-item">${x}</span>`)
+        .join('');
+
+      outputSection.style.display = 'block';
+    }
+
+    document.getElementById('btnSalin').addEventListener('click', () => {
+      const saved = muatDariLocalStorage(marketSelect.value);
+      if (!saved?.output) return showStatus("ℹ️ Tidak ada data untuk disalin.", false);
+      const text = saved.output.kandidatKuat.join(',');
+      navigator.clipboard.writeText(text).then(() => {
+        showStatus("✅ Kandidat kuat tersalin!", true);
+      });
+    });
+
+    document.getElementById('btnSimpan').addEventListener('click', () => {
+      const market = marketSelect.value;
+      if (!market) return showStatus("⚠️ Pilih market.", false);
+      const saved = muatDariLocalStorage(market);
+      if (!saved || !saved.output) return showStatus("ℹ️ Tidak ada hasil untuk disimpan.", false);
+      simpanKeFirebase(market, saved);
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      inputs.forEach(inp => inp.value = '');
+      outputSection.style.display = 'none';
+      const market = marketSelect.value;
+      if (market) localStorage.removeItem(`rumah15_${market}`);
+    });
+
+    document.getElementById('btnSample').addEventListener('click', () => {
+      ['1234','5678','2020','9876','5432'].forEach((v,i) => {
+        inputs[i].value = v;
+      });
+    });
+  </script>
+</body>
+</html>
