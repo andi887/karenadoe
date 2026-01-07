@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RES HARIAN – Rumah19</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    .navbar {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #2ecc71;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .back-btn:hover {
+      background: #27ae60;
+    }
+    .page-title {
+      text-align: center;
+      font-size: 1.8em;
+      margin: 16px 0;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 0.95em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-row-btn { background-color: #FF9800; color: white; }
+    .save-btn { background-color: #4CAF50; color: white; }
+    .edit-btn { background-color: #9C27B0; color: white; }
+    .market-select {
+      margin: 12px 0;
+      text-align: center;
+    }
+    .market-select label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #444;
+    }
+    .market-status {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #666;
+    }
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin: 20px 0;
+    }
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.95em;
+    }
+    th {
+      background-color: #f1f3f5;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      text-align: center;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.95em;
+      padding: 4px;
+    }
+    input[type="text"]:read-only {
+      background-color: #f9f9f9 !important;
+      color: #666;
+    }
+    .hint {
+      font-size: 0.85em;
+      color: #888;
+      text-align: center;
+      margin-top: 4px;
+    }
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: center; }
+      button { width: 100%; max-width: 220px; }
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
+  </div>
+
+  <h1 class="page-title">RES HARIAN</h1>
+
+  <div class="market-select">
+    <label for="market">Pilih Market</label>
+    <select id="market">
+      <option value="Cambodia">Cambodia</option>
+      <option value="Sidney">Sidney</option>
+      <option value="China">China</option>
+      <option value="Japan">Japan</option>
+      <option value="SGP">SGP</option>
+      <option value="Taiwan">Taiwan</option>
+      <option value="Hongkong">Hongkong</option>
+      <option value="Nusa">Nusa</option>
+    </select>
+    <div class="market-status" id="marketStatus">Market: SGP</div>
+  </div>
+
+  <div class="controls">
+    <button class="edit-btn" id="edit-btn">Edit</button>
+    <button class="save-btn" id="save-btn">Simpan</button>
+    <button class="add-row-btn" id="add-row">Tambah Baris</button>
+  </div>
+
+  <div class="table-container">
+    <table id="res-table">
+      <thead>
+        <tr>
+          <th>tgl/bulan</th>
+          <th>senin</th>
+          <th>selasa</th>
+          <th>rabu</th>
+          <th>kamis</th>
+          <th>jumat</th>
+          <th>sabtu</th>
+          <th>minggu</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Data dimuat di sini -->
+      </tbody>
+    </table>
+    <div class="hint">• Kolom tgl/bulan: contoh "07/01"<br>• Kolom hari: input bebas (maks 7 karakter)</div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Konfigurasi Firebase eksternal -->
+  <script src="config-firebase.js"></script>
+
+  <script>
+    if (!firebase.apps.length) {
+      alert('Firebase belum diinisialisasi. Pastikan config-firebase.js tersedia dan valid.');
+    }
+    const db = firebase.database();
+
+    let isEditing = false;
+    const marketSelect = document.getElementById('market');
+    const tableBody = document.getElementById('table-body');
+
+    // Inisialisasi
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('selectedMarket') || 'SGP';
+      marketSelect.value = saved;
+      updateMarketStatus(saved);
+      loadTableData(saved);
+
+      marketSelect.addEventListener('change', (e) => {
+        const m = e.target.value;
+        localStorage.setItem('selectedMarket', m);
+        updateMarketStatus(m);
+        loadTableData(m);
+      });
+
+      document.getElementById('edit-btn').addEventListener('click', toggleEdit);
+      document.getElementById('save-btn').addEventListener('click', saveData);
+      document.getElementById('add-row').addEventListener('click', addEmptyRow);
+    });
+
+    function updateMarketStatus(market) {
+      document.getElementById('marketStatus').textContent = `Market: ${market}`;
+    }
+
+    function enforceMaxLength(input) {
+      // Kolom tgl/bulan: tidak dibatasi, tapi disarankan format pendek
+      // Kolom lain: maks 7 karakter
+      const colIndex = Array.from(input.parentElement.parentElement.children).indexOf(input.parentElement);
+      if (colIndex === 0) {
+        // tgl/bulan → tidak enforce panjang, biarkan bebas
+        // Tapi tetap batasi maks 10 karakter agar tidak memanjang
+        if (input.value.length > 10) input.value = input.value.slice(0, 10);
+      } else {
+        if (input.value.length > 7) input.value = input.value.slice(0, 7);
+      }
+    }
+
+    function createRow(data) {
+      const tr = document.createElement('tr');
+      data.forEach((val, i) => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = val;
+        input.maxLength = i === 0 ? 10 : 7;
+        input.readOnly = !isEditing;
+        input.addEventListener('input', () => enforceMaxLength(input));
+
+        const td = document.createElement('td');
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+      return tr;
+    }
+
+    function addEmptyRow() {
+      if (!isEditing) {
+        alert('Aktifkan mode Edit terlebih dahulu.');
+        return;
+      }
+      const emptyData = Array(8).fill('');
+      tableBody.appendChild(createRow(emptyData));
+    }
+
+    function toggleEdit() {
+      isEditing = !isEditing;
+      const btn = document.getElementById('edit-btn');
+      btn.textContent = isEditing ? 'Selesai Edit' : 'Edit';
+      btn.style.backgroundColor = isEditing ? '#e91e63' : '#9C27B0';
+
+      // Update semua input di tabel
+      const inputs = document.querySelectorAll('#res-table input');
+      inputs.forEach(input => {
+        input.readOnly = !isEditing;
+        input.style.background = isEditing ? 'transparent' : '#f9f9f9';
+      });
+    }
+
+    function getTableData() {
+      const rows = [];
+      tableBody.querySelectorAll('tr').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const values = Array.from(inputs).map(inp => inp.value.trim());
+        if (values.some(v => v !== '')) {
+          rows.push(values);
+        }
+      });
+      return rows;
+    }
+
+    function saveData() {
+      const market = marketSelect.value;
+      const data = getTableData();
+
+      if (data.length === 0) {
+        alert('Tidak ada data untuk disimpan.');
+        return;
+      }
+
+      db.ref(`rumah19/${market}`).set(data)
+        .then(() => alert('✓ Data berhasil disimpan ke Firebase (proyek "sabar")!'))
+        .catch(err => {
+          console.error('Error:', err);
+          alert('✗ Gagal menyimpan: ' + err.message);
+        });
+    }
+
+    function loadTableData(market) {
+      tableBody.innerHTML = '<tr><td colspan="8" class="loading">Memuat data...</td></tr>';
+      db.ref(`rumah19/${market}`).once('value')
+        .then(snapshot => {
+          const rawData = snapshot.val() || [];
+          tableBody.innerHTML = '';
+          if (Array.isArray(rawData)) {
+            rawData.forEach(row => {
+              const padded = Array(8).fill('').map((_, i) => row[i] || '');
+              tableBody.appendChild(createRow(padded));
+            });
+          }
+          if (rawData.length === 0 && isEditing) {
+            addEmptyRow();
+          }
+        })
+        .catch(err => {
+          console.error('Load error:', err);
+          tableBody.innerHTML = '<tr><td colspan="8" class="loading">Gagal memuat data.</td></tr>';
+        });
+    }
+  </script>
+</body>
+</html>
