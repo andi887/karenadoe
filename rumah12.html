@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rumah12 — Analisis Tengah-Tepi</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent2: #a78bfa;
+      --ok: #10b981;
+      --danger: #ef4444;
+      --warn: #fbbf24;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% 20%, #0b1324, #0a1020 60%, #070b18);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .back-home {
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .back-home a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin: 0 0 20px;
+      letter-spacing: 0.2px;
+    }
+    #market-status {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826, #0f1624);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      background: #0c1220;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #0b1020;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btn-secondary { background: #0c1220; color: var(--text); border: 1px solid rgba(255,255,255,0.08); }
+    .btn-delete { background: linear-gradient(90deg, var(--danger), #f87171); color: #0b1020; }
+    .btn-salin { background: linear-gradient(90deg, var(--ok), #34d399); color: #0b1020; padding: 6px 12px; font-size: 0.9rem; }
+    .status {
+      text-align: center;
+      min-height: 24px;
+      margin: 12px 0;
+      font-weight: 600;
+    }
+    .success { color: var(--ok); }
+    .error { color: var(--danger); }
+    .result-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .result-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .zone-dominan {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--warn);
+      text-align: center;
+      margin: 12px 0;
+    }
+    .daftar-2d {
+      background: #0c1220;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 30px;
+    }
+    .frekuensi-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    .frekuensi-table th,
+    .frekuensi-table td {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px;
+      text-align: center;
+    }
+    .frekuensi-table th {
+      background: rgba(34, 211, 238, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back-home">
+      <a href="index.html">← Kembali ke Beranda</a>
+    </div>
+
+    <h1>rumah12 — Analisis Tengah-Tepi</h1>
+    <div id="market-status"></div>
+
+    <div class="card">
+      <div style="margin-bottom: 16px;">
+        <label for="marketSelect">Pilih Market</label>
+        <select id="marketSelect">
+          <option value="">-- Pilih Market --</option>
+          <option value="Cambodia">Cambodia</option>
+          <option value="Sidney">Sidney</option>
+          <option value="China">China</option>
+          <option value="Japan">Japan</option>
+          <option value="SGP">SGP</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
+        </select>
+      </div>
+
+      <div style="margin: 16px 0;">
+        <label>Data Harian (5 result terakhir, pisah dengan koma)</label>
+        <input type="text" id="inputHarian" placeholder="Contoh: 1234,5678,9012,3456,7890" />
+      </div>
+
+      <div style="margin: 16px 0;">
+        <label>Data Hari Khusus (3 result hari yang sama, pisah dengan koma)</label>
+        <input type="text" id="inputKhusus" placeholder="Contoh: 1234,5678,9012" />
+      </div>
+
+      <div class="btn-row">
+        <button id="btnAnalisis">🔍 Analisis</button>
+        <button id="btnSimpan" class="btn-secondary">💾 Simpan ke Cloud</button>
+        <button id="btnHapus" class="btn-delete">🗑️ Hapus</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <!-- HASIL ANALISIS AKAN DITAMPILKAN DI SINI -->
+    <div id="results-container"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
+  <script>
+    // === FUNGSI BANTU ===
+    function ekstrakPasangan(result4D) {
+      const a = result4D[0], b = result4D[1], c = result4D[2], d = result4D[3];
+      return [
+        a + b, // ab
+        b + c, // bc
+        c + d, // cd
+        a + d, // ad
+        a + c  // ac
+      ].map(s => parseInt(s, 10));
+    }
+
+    function kategorikanZona(angka2D) {
+      if (angka2D >= 25 && angka2D <= 49) return "Tengah Bawah";
+      if (angka2D >= 50 && angka2D <= 74) return "Tengah Atas";
+      if (angka2D >= 0 && angka2D <= 24) return "Tepi Bawah";
+      if (angka2D >= 75 && angka2D <= 99) return "Tepi Atas";
+      return null;
+    }
+
+    function hitungFrekuensi(dataResult) {
+      const frekuensi = {
+        "Tengah Bawah": 0,
+        "Tengah Atas": 0,
+        "Tepi Bawah": 0,
+        "Tepi Atas": 0
+      };
+      
+      dataResult.forEach(res => {
+        const pasangan = ekstrakPasangan(res);
+        pasangan.forEach(num => {
+          const zona = kategorikanZona(num);
+          if (zona) frekuensi[zona]++;
+        });
+      });
+      
+      return frekuensi;
+    }
+
+    function tentukanZonaDominan(frekuensi) {
+      return Object.keys(frekuensi).reduce((a, b) => 
+        frekuensi[a] > frekuensi[b] ? a : 
+        (frekuensi[a] === frekuensi[b] ? (a < b ? a : b) : b)
+      );
+    }
+
+    function generateDaftar2D(zona) {
+      let list = [];
+      if (zona === "Tengah Bawah") list = Array.from({length:25}, (_,i) => (25+i).toString().padStart(2,'0'));
+      else if (zona === "Tengah Atas") list = Array.from({length:25}, (_,i) => (50+i).toString().padStart(2,'0'));
+      else if (zona === "Tepi Bawah") list = Array.from({length:25}, (_,i) => i.toString().padStart(2,'0'));
+      else if (zona === "Tepi Atas") list = Array.from({length:25}, (_,i) => (75+i).toString().padStart(2,'0'));
+      return list.length ? list.join('*') + '#' : '-';
+    }
+
+    function analisisSatuVarian(dataResult, jenis) {
+      const frekuensi = hitungFrekuensi(dataResult);
+      const zonaDominan = tentukanZonaDominan(frekuensi);
+      const daftar2D = generateDaftar2D(zonaDominan);
+      const totalFrekuensi = Object.values(frekuensi).reduce((a,b) => a+b, 0);
+      
+      return {
+        jenis,
+        frekuensi,
+        zonaDominan,
+        daftar2D,
+        totalFrekuensi
+      };
+    }
+
+    // === UTILITAS ===
+    function showStatus(text, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = "status " + (isError ? "error" : "success");
+    }
+
+    function salinTeks(teks) {
+      if (!teks || teks === '-') return showStatus("ℹ️ Tidak ada data.", true);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(teks).then(() => {
+          showStatus("✅ Disalin!", false);
+        }).catch(() => showStatus("❌ Gagal salin.", true));
+      }
+    }
+
+    function renderHasil(varian, container) {
+      const div = document.createElement('div');
+      div.className = 'result-box';
+      
+      let jenisLabel = "Tunggal";
+      if (varian.jenis === "harian") jenisLabel = "Harian (5 result = 25 frekuensi)";
+      else if (varian.jenis === "khusus") jenisLabel = "Hari Khusus (3 result = 15 frekuensi)";
+      
+      div.innerHTML = `
+        <div class="result-header">
+          <div class="result-title">📊 Analisis ${jenisLabel}</div>
+          <button class="btn-salin" data-target="daftar-${varian.jenis}">Salin</button>
+        </div>
+        <div class="zone-dominan">🎯 Zona Dominan: ${varian.zonaDominan} (${varian.frekuensi[varian.zonaDominan]}/${varian.totalFrekuensi})</div>
+        
+        <div style="margin: 16px 0;">
+          <strong>📊 Detail Frekuensi:</strong>
+          <table class="frekuensi-table">
+            <thead>
+              <tr>
+                <th>Zona</th>
+                <th>Frekuensi</th>
+                <th>Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(varian.frekuensi).map(([zona, freq]) => `
+                <tr>
+                  <td>${zona}</td>
+                  <td>${freq}</td>
+                  <td>${((freq/varian.totalFrekuensi)*100).toFixed(1)}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="margin-top: 16px;">
+          <strong>🔢 Semua Angka 2D di Zona ${varian.zonaDominan}:</strong>
+          <div class="daftar-2d" id="daftar-${varian.jenis}">${varian.daftar2D}</div>
+        </div>
+      `;
+      
+      container.appendChild(div);
+      
+      // Pasang event listener untuk tombol salin
+      const btnSalin = div.querySelector('.btn-salin');
+      if (btnSalin) {
+        btnSalin.addEventListener('click', () => {
+          const teks = document.getElementById(`daftar-${varian.jenis}`).textContent;
+          salinTeks(teks);
+        });
+      }
+    }
+
+    // === MUAT DATA DARI FIREBASE ===
+    async function loadDataFromFirebase(market) {
+      if (!market) return;
+      try {
+        const snapshot = await firebase.database().ref(`rumah12/${market}`).once('value');
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById('inputHarian').value = data.inputHarian || '';
+          document.getElementById('inputKhusus').value = data.inputKhusus || '';
+          if (data.hasil) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '';
+            data.hasil.forEach(varian => {
+              renderHasil(varian, container);
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Gagal muat ", err);
+      }
+    }
+
+    function saveDataToFirebase(market, varianList) {
+      if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+      
+      const data = {
+        inputHarian: document.getElementById('inputHarian').value,
+        inputKhusus: document.getElementById('inputKhusus').value,
+        hasil: varianList,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      firebase.database().ref(`rumah12/${market}`).set(data)
+        .then(() => showStatus("✅ Tersimpan ke cloud!", false))
+        .catch(err => showStatus("❌ Gagal simpan.", true));
+    }
+
+    // === INISIALISASI ===
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!firebase.apps.length) {
+        showStatus("⚠️ Firebase tidak dimuat.", true);
+        return;
+      }
+
+      const marketSelect = document.getElementById('marketSelect');
+      const inputHarian = document.getElementById('inputHarian');
+      const inputKhusus = document.getElementById('inputKhusus');
+      const btnAnalisis = document.getElementById('btnAnalisis');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const btnHapus = document.getElementById('btnHapus');
+      const resultsContainer = document.getElementById('results-container');
+      const marketStatusEl = document.getElementById('market-status');
+
+      // Validasi input hanya angka dan koma
+      [inputHarian, inputKhusus].forEach(input => {
+        input.addEventListener('input', () => {
+          input.value = input.value.replace(/[^0-9,]/g, '');
+        });
+      });
+
+      // Market aktif
+      const marketAktif = localStorage.getItem('marketAktif');
+      if (marketAktif) {
+        marketSelect.value = marketAktif;
+        marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
+        loadDataFromFirebase(marketAktif);
+      } else {
+        marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
+      }
+
+      marketSelect.addEventListener('change', () => {
+        const market = marketSelect.value;
+        if (market) {
+          localStorage.setItem('marketAktif', market);
+          marketStatusEl.textContent = `📊 Market aktif: ${market}`;
+          loadDataFromFirebase(market);
+        }
+      });
+
+      btnAnalisis.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+        
+        const harianStr = inputHarian.value.trim();
+        const khususStr = inputKhusus.value.trim();
+        
+        if (!harianStr && !khususStr) {
+          return showStatus("⚠️ Minimal satu input harus diisi.", true);
+        }
+
+        try {
+          resultsContainer.innerHTML = '';
+          const varianList = [];
+
+          // Proses Data Harian jika ada
+          if (harianStr) {
+            const dataHarian = harianStr.split(',').filter(x => x.length === 4);
+            if (dataHarian.length < 5) {
+              showStatus(`⚠️ Data harian minimal 5 result, saat ini ${dataHarian.length}`, true);
+            } else {
+              const varianHarian = analisisSatuVarian(dataHarian, "harian");
+              renderHasil(varianHarian, resultsContainer);
+              varianList.push(varianHarian);
+            }
+          }
+
+          // Proses Data Hari Khusus jika ada
+          if (khususStr) {
+            const dataKhusus = khususStr.split(',').filter(x => x.length === 4);
+            if (dataKhusus.length < 3) {
+              showStatus(`⚠️ Data khusus minimal 3 result, saat ini ${dataKhusus.length}`, true);
+            } else {
+              const varianKhusus = analisisSatuVarian(dataKhusus, "khusus");
+              renderHasil(varianKhusus, resultsContainer);
+              varianList.push(varianKhusus);
+            }
+          }
+
+          showStatus("✅ Analisis selesai.", false);
+        } catch (err) {
+          console.error(err);
+          showStatus("❌ Error saat menganalisis.", true);
+        }
+      });
+
+      btnSimpan.addEventListener('click', () => {
+        const market = marketSelect.value;
+        if (!market) return showStatus("⚠️ Pilih market dulu.", true);
+        
+        // Ambil varian yang sedang ditampilkan
+        const varianList = [];
+        const resultBoxes = resultsContainer.querySelectorAll('.result-box');
+        resultBoxes.forEach(box => {
+          const zonaText = box.querySelector('.zone-dominan').textContent;
+          const zona = zonaText.match(/🎯 Zona Dominan: (.+?) \(/)?.[1] || '';
+          const jenis = box.querySelector('.btn-salin').getAttribute('data-target').replace('daftar-', '');
+          
+          if (zona && jenis) {
+            const frekuensi = {
+              "Tengah Bawah": 0,
+              "Tengah Atas": 0,
+              "Tepi Bawah": 0,
+              "Tepi Atas": 0
+            };
+            // Ambil frekuensi dari tabel
+            const rows = box.querySelectorAll('.frekuensi-table tbody tr');
+            rows.forEach(row => {
+              const cells = row.querySelectorAll('td');
+              if (cells.length >= 2) {
+                const namaZona = cells[0].textContent;
+                const freq = parseInt(cells[1].textContent);
+                frekuensi[namaZona] = freq;
+              }
+            });
+            
+            const totalFrekuensi = Object.values(frekuensi).reduce((a,b) => a+b, 0);
+            const daftar2D = box.querySelector('.daftar-2d').textContent;
+            
+            varianList.push({
+              jenis,
+              frekuensi,
+              zonaDominan: zona,
+              daftar2D,
+              totalFrekuensi
+            });
+          }
+        });
+        
+        if (varianList.length === 0) {
+          return showStatus("⚠️ Tidak ada hasil untuk disimpan.", true);
+        }
+        
+        saveDataToFirebase(market, varianList);
+      });
+
+      btnHapus.addEventListener('click', () => {
+        inputHarian.value = '';
+        inputKhusus.value = '';
+        resultsContainer.innerHTML = '';
+        showStatus("🗑️ Data dihapus.", false);
+      });
+    });
+  </script>
+</body>
+</html>
