@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fitur 6 - Prediksi Pola & 2D</title>
+  <title>Rumah6 - Prediksi Pola & 2D (3 Versi)</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 16px; background: #f9f9f9; margin: 0; }
     .container { max-width: 600px; margin: 0 auto; background: white; padding: 16px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -25,9 +26,8 @@
 </head>
 <body>
   <div class="container">
-    <h2>Fitur 6 – Prediksi Pola & 2D</h2>
+    <h2>Rumah6 – Prediksi 3 Pola & 2D</h2>
     
-    <!-- Blok Analisis Utama -->
     <div class="block" id="mainBlock">
       <div class="form-group">
         <label for="market">Pilih Market:</label>
@@ -39,6 +39,7 @@
           <option value="Japan">Japan</option>
           <option value="Taiwan">Taiwan</option>
           <option value="Hongkong">Hongkong</option>
+          <option value="Nusa">Nusa</option>
         </select>
       </div>
       
@@ -54,7 +55,6 @@
       <div id="results" style="display:none; margin-top: 16px;"></div>
     </div>
 
-    <!-- Blok Kloning Akan Ditambahkan di Sini -->
     <div id="clonedBlocks"></div>
 
     <div class="back-home">
@@ -67,7 +67,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   
   <script>
-    // 🔐 Konfigurasi Firebase — PROYEK SABAR (sama seperti rumah1)
+    // 🔐 Konfigurasi Firebase — PROYEK SABAR (tanpa spasi!)
     const firebaseConfig = {
       apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
       authDomain: "sabar-2e686.firebaseapp.com",
@@ -81,7 +81,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // === UTILITAS ===
     const isSmall = d => d >= 0 && d <= 4;
     const classify = (h, t) => (isSmall(h) ? 'K' : 'B') + (isSmall(t) ? 'K' : 'B');
 
@@ -107,11 +106,12 @@
       return Array.from(all).sort().join('*');
     }
 
+    // 🔥 DIPERLUAS: 3 POLA PREDIKSI
     const transitionMap = {
-      'KK': ['KB', 'BK'],
-      'BB': ['KB', 'BK'],
-      'KB': ['KK', 'BB'],
-      'BK': ['KK', 'BB']
+      'KK': ['KB', 'BK', 'BB'],
+      'BB': ['KB', 'BK', 'KK'],
+      'KB': ['KK', 'BB', 'BK'],
+      'BK': ['KK', 'BB', 'KB']
     };
 
     function runPrediction(inputText) {
@@ -125,9 +125,9 @@
       });
 
       const patterns = pairs.map(p => classify(parseInt(p[0]), parseInt(p[1])));
-      const p6 = patterns[5];
+      const p6 = patterns[5]; // pola terakhir
 
-      const predictedPatterns = transitionMap[p6] || ['KB', 'BK'];
+      const predictedPatterns = transitionMap[p6] || ['KB', 'BK', 'BB'];
       const all2D = generate2DFromPatterns(predictedPatterns);
 
       return {
@@ -136,8 +136,9 @@
       };
     }
 
+    // 🔁 Ganti path ke rumah6 (opsional tapi direkomendasikan)
     function saveToFirebase(market, inputData, resultData) {
-      db.ref(`fitur6/${market}`).set({
+      db.ref(`rumah6/${market}`).set({
         input: inputData,
         patterns: resultData.patterns,
         all2D: resultData.all2D,
@@ -146,18 +147,16 @@
     }
 
     function loadFromFirebase(market, callback) {
-      db.ref(`fitur6/${market}`).once('value').then(snapshot => {
+      db.ref(`rumah6/${market}`).once('value').then(snapshot => {
         const data = snapshot.val();
         if (data) callback(data);
         else callback(null);
       });
     }
 
-    // 🔥 FUNGSI BARU: HAPUS DARI FIREBASE
     function deleteFromFirebase(market, callback) {
       if (!confirm(`Hapus data untuk market "${market}" dari cloud?`)) return;
-      
-      db.ref(`fitur6/${market}`).remove()
+      db.ref(`rumah6/${market}`).remove()
         .then(() => {
           alert("✅ Data dihapus dari cloud.");
           if (callback) callback();
@@ -167,6 +166,8 @@
           alert("❌ Gagal menghapus: " + (err.message || "Cek koneksi"));
         });
     }
+
+    // ... (fungsi copyFromBlock, cloneBlock, handlePrediction, dll. tetap sama)
 
     function copyFromBlock(btn) {
       const target = btn.closest('.result-box').querySelector('.copy-target');
@@ -205,11 +206,9 @@
       if (select) select.value = 'SGP';
       if (deleteBtn) deleteBtn.id = `deleteBtn-${cloneCount}`;
       
-      // Hapus tombol kloning di klon
       const cloneBtn = main.querySelector('.clone-btn');
       if (cloneBtn) cloneBtn.remove();
       
-      // Pasang ulang event
       const predictBtn = main.querySelector('button:not(.delete-btn):not(.copy-btn)');
       if (predictBtn) {
         predictBtn.textContent = "OK";
@@ -217,7 +216,6 @@
         predictBtn.addEventListener('click', () => handlePrediction(main, select.value));
       }
       
-      // Pasang event hapus
       const newDeleteBtn = main.querySelector('.delete-btn');
       if (newDeleteBtn) {
         newDeleteBtn.onclick = null;
@@ -243,7 +241,7 @@
         
         const outputHTML = `
           <div class="result-box">
-            <div class="label">Prediksi Pola (2D Terakhir):</div>
+            <div class="label">Prediksi Pola (3 Versi):</div>
             <div class="value">${result.patterns.join(', ')}</div>
           </div>
           <div class="result-box">
@@ -263,13 +261,11 @@
       }
     }
 
-    // Inisialisasi
     document.getElementById('predictBtn').addEventListener('click', () => {
       const market = document.getElementById('market').value;
       handlePrediction(document.getElementById('mainBlock'), market);
     });
 
-    // 🔥 Tombol Hapus Utama
     document.getElementById('deleteBtn').addEventListener('click', () => {
       const market = document.getElementById('market').value;
       deleteFromFirebase(market, () => {
@@ -288,7 +284,7 @@
           document.getElementById('input').value = data.input;
           const outputHTML = `
             <div class="result-box">
-              <div class="label">Prediksi Pola (2D Terakhir):</div>
+              <div class="label">Prediksi Pola (3 Versi):</div>
               <div class="value">${data.patterns.join(', ')}</div>
             </div>
             <div class="result-box">
@@ -311,7 +307,7 @@
             inp.value = data.input;
             const outputHTML = `
               <div class="result-box">
-                <div class="label">Prediksi Pola (2D Terakhir):</div>
+                <div class="label">Prediksi Pola (3 Versi):</div>
                 <div class="value">${data.patterns.join(', ')}</div>
               </div>
               <div class="result-box">
