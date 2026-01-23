@@ -44,6 +44,19 @@
       color: #4CAF50;
       margin-bottom: 10px;
     }
+    .selectors {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+    .selectors select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95em;
+    }
     .table-container {
       overflow-x: auto;
       overflow-y: auto;
@@ -120,15 +133,39 @@
     .success { color: #4CAF50; }
     .error { color: #f44336; }
     @media (max-width: 600px) {
-      .controls { flex-direction: column; align-items: center; }
-      button { width: 100%; max-width: 200px; }
+      .controls, .selectors { flex-direction: column; align-items: center; }
+      button, .selectors select { width: 100%; max-width: 220px; }
     }
   </style>
 </head>
 <body>
   <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
   <div class="feature-label">rumah20</div>
-  <div id="market-status"></div>
+  <div id="market-status">Pilih market dan hari</div>
+
+  <div class="selectors">
+    <select id="market-select">
+      <option value="">Pilih Market Jam</option>
+      <option value="JAM12.30">JAM12.30</option>
+      <option value="JAM15">JAM15</option>
+      <option value="JAM16.45C">JAM16.45C</option>
+      <option value="JAM1730J">JAM1730J</option>
+      <option value="JAM22T">JAM22T</option>
+      <option value="JAM0001">JAM0001</option>
+    </select>
+
+    <select id="hari-select" disabled>
+      <option value="">Pilih Hari</option>
+      <option value="Senin">Senin</option>
+      <option value="Selasa">Selasa</option>
+      <option value="Rabu">Rabu</option>
+      <option value="Kamis">Kamis</option>
+      <option value="Jumat">Jumat</option>
+      <option value="Sabtu">Sabtu</option>
+      <option value="Minggu">Minggu</option>
+    </select>
+  </div>
+
   <div id="status"></div>
 
   <div class="table-container">
@@ -165,13 +202,13 @@
     <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
   </div>
 
-  <!-- Firebase Dependencies (Compat Mode) - DIPERBAIKI -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // === KONSTANTA KONTROL (SAMA PERSIS DENGAN RUMAH1) ===
+    // === KONSTANTA KONTROL (SAMA DENGAN RUMAH1) ===
     const KONTROL_B = {1:["1","2","6","7","8","9"],2:["0","2","3","7","8","9"],3:["0","1","3","4","8","9"],4:["0","1","2","4","5","9"],5:["0","1","2","3","5","6"],6:["1","2","3","4","6","7"],7:["2","3","4","5","7","8"],8:["3","4","5","6","8","9"],9:["0","4","5","6","7","9"],0:["1","2","3","4","5","6"]};
     const KONTROL_C = {0:["3","4","5","6","8","9"],1:["0","2","3","4","6","9"],2:["1","2","3","5","6","8"],3:["0","1","2","3","4","9"],4:["1","2","3","6","8","9"],5:["0","1","2","3","4","5","9"],6:["0","2","3","5","6","9"],7:["0","1","2","3","8","9"],8:["2","3","4","6","7","9"],9:["1","2","3","4","5","6"]};
     const KONTROL_G = {0:["0","1","2","7","8","9"],1:["0","1","2","3","8","9"],2:["0","1","2","3","4","9"],3:["0","1","2","3","4","5"],4:["1","2","3","4","5","6"],5:["2","3","4","5","6","7"],6:["3","4","5","6","7","8"],7:["4","5","6","7","8","9"],8:["5","6","7","8","9","0"],9:["6","7","8","9","0","1"]};
@@ -185,7 +222,10 @@
     const KONTROL_M = {0:["9","0","1","2","3"],1:["8","9","0","1","2"],2:["3","4","5","6","7"],3:["3","4","5","6","7"],4:["5","6","7","8","9"],5:["0","1","2","3","4"],6:["7","8","9","0","1"],7:["2","3","4","5","6"],8:["1","2","3","4","5"],9:["4","5","6","7","8"]};
     const KONTROL_N = {0:["1","4","6","9"],1:["0","2","5","7"],2:["1","3","6","8"],3:["2","4","7","9"],4:["0","3","5","8"],5:["6","4","1","9"],6:["7","5","0","2"],7:["8","6","3","1"],8:["9","7","4","2"],9:["0","8","5","3"]};
 
-    // === FUNGSI PERHITUNGAN (SAMA PERSIS DENGAN RUMAH1) ===
+    // === FUNGSI PERHITUNGAN (SAMA PERSIS) ===
+    // ... [SEMUA FUNGSI calculateKontrolX tetap sama seperti sebelumnya] ...
+    // Untuk efisiensi, saya sisipkan semua fungsi di bawah tanpa mengubah logika
+
     function calculateKontrolB(resSourceValue, resTargetValue) {
       if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
         return { value: "", isError: false };
@@ -510,7 +550,7 @@
           formatTanggalInput(input);
         } else if (i === 1) {
           input.placeholder = "4D";
-          input.maxLength = 4; // ← ditambahkan
+          input.maxLength = 4;
         }
         td.appendChild(input);
         tr.appendChild(td);
@@ -539,26 +579,18 @@
       return tr;
     }
 
-    // === FIREBASE DENGAN MARKET JAM (BUKAN GEOGRAFIS) ===
+    // === FIREBASE DENGAN MARKET + HARI ===
     let currentMarket = null;
-
-    // Daftar market khusus untuk rumah20
-    const MARKET_OPTIONS = [
-      "JAM12.30",
-      "JAM15",
-      "JAM16.45C",
-      "JAM1730J",
-      "JAM22T",
-      "JAM0001"
-    ];
+    let currentHari = null;
 
     function getFirebasePath() {
-      return `rumah20/${currentMarket}/data`; // ← PATH BERBEDA DARI RUMAH1!
+      if (!currentMarket || !currentHari) return null;
+      return `rumah20/${currentMarket}/${currentHari}/data`;
     }
 
     function saveDataToFirebase() {
-      if (!currentMarket) {
-        showStatus("⚠️ Pilih market jam terlebih dahulu.", false);
+      if (!currentMarket || !currentHari) {
+        showStatus("⚠️ Pilih market dan hari terlebih dahulu.", false);
         return;
       }
       try {
@@ -579,13 +611,15 @@
     }
 
     async function loadDataFromFirebase() {
-      if (!currentMarket) {
+      if (!currentMarket || !currentHari) {
+        document.querySelector('#rumah20-table tbody').innerHTML = "";
         document.querySelector('#rumah20-table tbody').appendChild(createRow());
         return;
       }
       try {
         const db = firebase.database();
-        const snapshot = await db.ref(getFirebasePath()).once('value');
+        const path = getFirebasePath();
+        const snapshot = await db.ref(path).once('value');
         const tbody = document.querySelector('#rumah20-table tbody');
         tbody.innerHTML = "";
 
@@ -629,32 +663,46 @@
         return;
       }
 
-      // Buat elemen select market khusus jam
-      const marketSelect = document.createElement('select');
-      marketSelect.id = 'market-select';
-      MARKET_OPTIONS.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt;
-        option.textContent = opt;
-        marketSelect.appendChild(option);
-      });
+      const marketSelect = document.getElementById('market-select');
+      const hariSelect = document.getElementById('hari-select');
+      const statusEl = document.getElementById('market-status');
+
+      // Muat dari localStorage
+      const savedMarket = localStorage.getItem('rumah20_market') || '';
+      const savedHari = localStorage.getItem('rumah20_hari') || '';
+
+      marketSelect.value = savedMarket;
+      if (savedMarket) {
+        hariSelect.disabled = false;
+        hariSelect.value = savedHari;
+        if (savedHari) {
+          currentMarket = savedMarket;
+          currentHari = savedHari;
+          statusEl.textContent = `📊 Market: ${savedMarket} • Hari: ${savedHari}`;
+          loadDataFromFirebase();
+        }
+      }
+
       marketSelect.addEventListener('change', () => {
         currentMarket = marketSelect.value;
-        localStorage.setItem('rumah20_market', currentMarket);
-        document.getElementById('market-status').textContent = `📊 Market aktif: ${currentMarket}`;
-        loadDataFromFirebase();
+        currentHari = null;
+        hariSelect.value = '';
+        hariSelect.disabled = !currentMarket;
+        if (currentMarket) {
+          localStorage.setItem('rumah20_market', currentMarket);
+        }
+        statusEl.textContent = currentMarket ? `📊 Market: ${currentMarket}` : "Pilih market dan hari";
+        document.querySelector('#rumah20-table tbody').innerHTML = "";
       });
 
-      // Coba muat market terakhir
-      currentMarket = localStorage.getItem('rumah20_market') || MARKET_OPTIONS[0];
-      marketSelect.value = currentMarket;
-      document.getElementById('market-status').textContent = `📊 Market aktif: ${currentMarket}`;
-
-      // Sisipkan select di bawah status
-      const statusEl = document.getElementById('market-status');
-      statusEl.parentNode.insertBefore(marketSelect, statusEl.nextSibling);
-
-      loadDataFromFirebase();
+      hariSelect.addEventListener('change', () => {
+        currentHari = hariSelect.value;
+        if (currentMarket && currentHari) {
+          localStorage.setItem('rumah20_hari', currentHari);
+          statusEl.textContent = `📊 Market: ${currentMarket} • Hari: ${currentHari}`;
+          loadDataFromFirebase();
+        }
+      });
 
       document.getElementById('add-row').addEventListener('click', () => {
         const tbody = document.querySelector('#rumah20-table tbody');
