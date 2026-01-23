@@ -223,7 +223,7 @@
     const KONTROL_M = {0:["9","0","1","2","3"],1:["8","9","0","1","2"],2:["3","4","5","6","7"],3:["3","4","5","6","7"],4:["5","6","7","8","9"],5:["0","1","2","3","4"],6:["7","8","9","0","1"],7:["2","3","4","5","6"],8:["1","2","3","4","5"],9:["4","5","6","7","8"]};
     const KONTROL_N = {0:["1","4","6","9"],1:["0","2","5","7"],2:["1","3","6","8"],3:["2","4","7","9"],4:["0","3","5","8"],5:["6","4","1","9"],6:["7","5","0","2"],7:["8","6","3","1"],8:["9","7","4","2"],9:["0","8","5","3"]};
 
-    // === FUNGSI PERHITUNGAN (TIDAK DIUBAH SEDIKIT PUN) ===
+    // === FUNGSI PERHITUNGAN (TIDAK DIUBAH) ===
     function calculateKontrolB(resSourceValue, resTargetValue) {
       if (!/^\d+$/.test(resSourceValue) || resSourceValue.length < 2 || !/^\d+$/.test(resTargetValue) || resTargetValue.length < 2) {
         return { value: "", isError: false };
@@ -654,7 +654,7 @@
       }
     }
 
-    // === INISIALISASI UTAMA ===
+    // === INISIALISASI UTAMA (FINAL & DIPERBAIKI) ===
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof firebase === 'undefined' || !firebase.apps.length) {
         showStatus("⚠️ Firebase tidak dimuat", false);
@@ -665,29 +665,38 @@
       const hariSelect = document.getElementById('hari-select');
       const statusEl = document.getElementById('market-status');
 
-      // Muat pilihan terakhir dari localStorage
+      // Muat dari localStorage
       const savedMarket = localStorage.getItem('rumah20_market') || '';
       const savedHari = localStorage.getItem('rumah20_hari') || '';
 
+      // Set nilai UI
       marketSelect.value = savedMarket;
-      if (savedMarket) {
-        hariSelect.disabled = false;
-        hariSelect.value = savedHari;
-        if (savedHari) {
-          currentMarket = savedMarket;
-          currentHari = savedHari;
-          statusEl.textContent = `📊 Market: ${savedMarket} • Hari: ${savedHari}`;
-          loadDataFromFirebase();
-        }
+      hariSelect.value = savedHari;
+      hariSelect.disabled = !savedMarket;
+
+      // ⚠️ SET VARIABEL GLOBAL SECARA MANUAL (INI KUNCI PERBAIKAN!)
+      currentMarket = savedMarket || null;
+      currentHari = (savedMarket && savedHari) ? savedHari : null;
+
+      // Update status tampilan
+      if (currentMarket && currentHari) {
+        statusEl.textContent = `📊 Market: ${currentMarket} • Hari: ${currentHari}`;
+        loadDataFromFirebase();
+      } else if (currentMarket) {
+        statusEl.textContent = `📊 Market: ${currentMarket}`;
+      } else {
+        statusEl.textContent = "Pilih market dan hari";
       }
 
+      // Event: ganti market
       marketSelect.addEventListener('change', () => {
         currentMarket = marketSelect.value;
         currentHari = null;
         hariSelect.value = '';
         hariSelect.disabled = !currentMarket;
+        localStorage.setItem('rumah20_market', currentMarket || '');
+        
         if (currentMarket) {
-          localStorage.setItem('rumah20_market', currentMarket);
           statusEl.textContent = `📊 Market: ${currentMarket}`;
         } else {
           statusEl.textContent = "Pilih market dan hari";
@@ -695,6 +704,7 @@
         document.querySelector('#rumah20-table tbody').innerHTML = "";
       });
 
+      // Event: ganti hari
       hariSelect.addEventListener('change', () => {
         currentHari = hariSelect.value;
         if (currentMarket && currentHari) {
@@ -704,6 +714,7 @@
         }
       });
 
+      // Tombol
       document.getElementById('add-row').addEventListener('click', () => {
         const tbody = document.querySelector('#rumah20-table tbody');
         const newRow = createRow();
