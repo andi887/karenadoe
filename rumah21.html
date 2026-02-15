@@ -300,17 +300,31 @@
         row._labaInput.value = calculateLaba(row._hasilInput.value, row._tmodalInput.value);
       });
     }
-
-    function getTableData() {
-      const rows = [];
-      document.querySelectorAll('#table-body tr').forEach(row => {
-        const checkbox = row._checkbox;
-        const tgl = row._tglInput.value.trim();
-        const hline = row._hlineInput.value;
-        const tmodal = row._tmodalInput.value;
-        const laba = row._labaInput.value;
-        const hasil = row._hasilInput.value;
-        
+function getTableData() {
+  const rows = [];
+  document.querySelectorAll('#table-body tr').forEach(row => {
+    // Ambil semua nilai
+    const checkbox = row._checkbox;
+    const tgl = row._tglInput.value.trim();
+    const hline = row._hlineInput.value;
+    const tmodal = row._tmodalInput.value;
+    const laba = row._labaInput.value;
+    const hasil = row._hasilInput.value;
+    
+    // Simpan SELAMA baris ini ada (meskipun tgl kosong)
+    // Karena H/Line, Tmodal, dll. otomatis terisi
+    rows.push([
+      checkbox.checked,
+      tgl,
+      hline,
+      tmodal,
+      laba,
+      hasil
+    ]);
+  });
+  return rows;
+}
+   
         if (checkbox.checked || tgl) { // Simpan jika ceklis atau tgl ada
           rows.push([
             checkbox.checked,
@@ -406,4 +420,5 @@
 </body>
 
 </html>
+
 
