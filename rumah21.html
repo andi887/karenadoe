@@ -170,10 +170,11 @@
     <button class="save-btn" id="save-firebase">Simpan ke Firebase</button>
   </div>
 
-  <!-- Firebase SDK -->
- <!-- Firebase SDK - TANPA SPASI -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <!-- Firebase SDK - TANPA SPASI -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
+
   <script>
     let currentMarket = 'JAM12.30';
 
@@ -199,7 +200,6 @@
       return (rowIndex + 1) * 7000;
     }
 
-    // ✅ RUMUS BARU: Laba = Hasil - Tmodal
     function calculateLaba(hasilValue, tmodalValue) {
       const hasil = parseFloat(hasilValue) || 0;
       const tmodal = parseFloat(tmodalValue) || 0;
@@ -246,7 +246,7 @@
       tmodalTd.appendChild(tmodalInput);
       tr.appendChild(tmodalTd);
 
-      // ✅ Laba (otomatis, readonly)
+      // Laba
       const labaTd = document.createElement('td');
       const labaInput = document.createElement('input');
       labaInput.type = 'text';
@@ -289,53 +289,28 @@
       return tr;
     }
 
-    // ✅ Perbarui SEMUA nilai termasuk Laba
     function updateAllValues() {
       const rows = Array.from(document.querySelectorAll('#table-body tr'));
       rows.forEach((row, index) => {
         row._hlineInput.value = calculateHLine(index);
         row._tmodalInput.value = calculateTmodal(row._hlineInput.value);
         row._hasilInput.value = calculateHasil(index);
-        // ✅ Hitung Laba dari Hasil dan Tmodal
         row._labaInput.value = calculateLaba(row._hasilInput.value, row._tmodalInput.value);
       });
     }
 
+    // ✅ DIPERBAIKI: Simpan SEMUA baris yang ada di tabel
     function getTableData() {
-  const rows = [];
-  document.querySelectorAll('#table-body tr').forEach(row => {
-    // Ambil semua nilai
-    const checkbox = row._checkbox;
-    const tgl = row._tglInput.value.trim();
-    const hline = row._hlineInput.value;
-    const tmodal = row._tmodalInput.value;
-    const laba = row._labaInput.value;
-    const hasil = row._hasilInput.value;
-    
-    // Simpan SELAMA baris ini ada (meskipun tgl kosong)
-    // Karena H/Line, Tmodal, dll. otomatis terisi
-    rows.push([
-      checkbox.checked,
-      tgl,
-      hline,
-      tmodal,
-      laba,
-      hasil
-    ]);
-  });
-  return rows;
-}
-   
-        if (checkbox.checked || tgl) { // Simpan jika ceklis atau tgl ada
-          rows.push([
-            checkbox.checked,
-            tgl,
-            hline,
-            tmodal,
-            laba,
-            hasil
-          ]);
-        }
+      const rows = [];
+      document.querySelectorAll('#table-body tr').forEach(row => {
+        rows.push([
+          row._checkbox.checked,
+          row._tglInput.value.trim(),
+          row._hlineInput.value,
+          row._tmodalInput.value,
+          row._labaInput.value,
+          row._hasilInput.value
+        ]);
       });
       return rows;
     }
@@ -356,12 +331,12 @@
               const safeRow = [
                 row[0] === true,
                 row[1] || '',
-                '', '', '', '' // Semua diisi ulang otomatis
+                '', '', '', '' // Diisi ulang otomatis
               ];
               tbody.appendChild(createRow(safeRow));
             });
           }
-          updateAllValues(); // ✅ Pastikan semua nilai sesuai urutan
+          updateAllValues();
           if (rawData.length === 0) {
             addEmptyRow();
           }
@@ -419,8 +394,4 @@
     });
   </script>
 </body>
-
 </html>
-
-
-
