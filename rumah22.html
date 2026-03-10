@@ -112,9 +112,24 @@
       background: #f9f9f9;
       border-radius: 6px;
     }
+    .table-section {
+      margin-bottom: 16px;
+    }
+    .table-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .table-note-input {
+      width: 80px;
+      padding: 4px 6px;
+      font-size: 0.9em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
     .table-label {
       font-weight: bold;
-      margin: 8px 0 4px 0;
       color: #e91e63;
     }
     input[readonly] {
@@ -129,6 +144,15 @@
       }
       .sketsa-bil-section {
         width: calc(50% - 12px);
+      }
+    }
+    @media (max-width: 480px) {
+      .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .table-note-input {
+        width: 100%;
       }
     }
   </style>
@@ -151,7 +175,7 @@
       <button id="saveNotes" class="btn-primary">Simpan Catatan</button>
     </div>
 
-    <!-- 2. Fitur Collection (4 Tabel Otomatis) -->
+    <!-- 2. Fitur Collection (4 Tabel + Input Manual) -->
     <div class="sketsa-bil-section">
       <h2>📊 Fitur Collection (4 Tabel)</h2>
       <div id="tablesContainer"></div>
@@ -188,7 +212,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK - TANPA SPASI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
@@ -237,16 +261,33 @@
       alert('✓ Catatan disimpan!');
     }
 
-    // === BUAT TABEL (READONLY) ===
+    // === BUAT TABEL + INPUT MANUAL ===
     function createTables() {
       const container = document.getElementById('tablesContainer');
       container.innerHTML = '';
       for (let i = 0; i < 4; i++) {
-        const labelDiv = document.createElement('div');
-        labelDiv.className = 'table-label';
-        labelDiv.textContent = TABLE_LABELS[i];
-        container.appendChild(labelDiv);
+        const section = document.createElement('div');
+        section.className = 'table-section';
 
+        // Header: Input manual + Label
+        const header = document.createElement('div');
+        header.className = 'table-header';
+        
+        const noteInput = document.createElement('input');
+        noteInput.type = 'text';
+        noteInput.className = 'table-note-input';
+        noteInput.id = `tableNote${i+1}`;
+        noteInput.placeholder = 'Input...';
+        
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'table-label';
+        labelSpan.textContent = TABLE_LABELS[i];
+        
+        header.appendChild(noteInput);
+        header.appendChild(labelSpan);
+        section.appendChild(header);
+
+        // Tabel
         const table = document.createElement('table');
         table.id = `table${i+1}`;
         table.innerHTML = `
@@ -259,12 +300,14 @@
             </tr>
           </tbody>
         `;
-        container.appendChild(table);
+        section.appendChild(table);
+        container.appendChild(section);
       }
     }
 
-    // === SIMPAN TABEL (MESKI READONLY, SIMPAN UNTUK KONSISTENSI) ===
+    // === SIMPAN TABEL + INPUT MANUAL ===
     function saveTables() {
+      // Simpan data tabel
       const tablesData = [];
       for (let i = 1; i <= 4; i++) {
         const table = document.getElementById(`table${i}`);
@@ -274,10 +317,34 @@
           inputs[1]?.value || '',
           inputs[2]?.value || ''
         ];
-        tablesData.push([row]); // simpan sebagai array of rows
+        tablesData.push([row]);
       }
       saveToFirebase('tables', tablesData);
-      alert('✓ Semua tabel disimpan!');
+
+      // Simpan input manual
+      const tableNotes = [];
+      for (let i = 1; i <= 4; i++) {
+        tableNotes.push(document.getElementById(`tableNote${i}`).value.trim());
+      }
+      saveToFirebase('tableNotes', tableNotes);
+
+      alert('✓ Semua tabel dan catatan disimpan!');
+    }
+
+    // === MUAT INPUT MANUAL DARI FIREBASE ===
+    function loadTableNotes() {
+      const db = firebase.database();
+      db.ref(`rumah22/tableNotes`).once('value')
+        .then(snapshot => {
+          const notes = snapshot.val() || ['', '', '', ''];
+          for (let i = 0; i < 4; i++) {
+            const input = document.getElementById(`tableNote${i+1}`);
+            if (input && notes[i]) {
+              input.value = notes[i];
+            }
+          }
+        })
+        .catch(err => console.error('Load tableNotes error:', err));
     }
 
     // === KALKULATOR EV (TIDAK DIUBAH) ===
@@ -393,11 +460,12 @@
           document.getElementById('note3').value = notes[2];
           document.getElementById('note4').value = notes[3];
           document.getElementById('note5').value = notes[4];
-          updateTablesFromNotes(); // ← Update tabel setelah muat catatan
+          updateTablesFromNotes();
         }
       } catch (e) { console.error('Load notes error:', e); }
 
-      // Tabel tidak perlu dimuat ulang karena otomatis dari catatan
+      // Muat input manual
+      loadTableNotes();
     }
 
     function deleteAllData() {
@@ -411,6 +479,11 @@
             document.getElementById('note4').value = '';
             document.getElementById('note5').value = '';
             updateTablesFromNotes();
+            // Kosongkan input manual
+            for (let i = 1; i <= 4; i++) {
+              const input = document.getElementById(`tableNote${i}`);
+              if (input) input.value = '';
+            }
             document.getElementById('historyList').innerHTML = '';
             alert('✓ Semua data dihapus!');
           })
