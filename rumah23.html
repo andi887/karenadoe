@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -102,9 +103,10 @@
     input[type="text"]:valid {
       border-color: var(--ok);
     }
+    /* Diubah menjadi 3 kolom agar 6 tombol tersusun rapi (2 baris) */
     .btn-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 20px;
     }
@@ -202,6 +204,7 @@
       .input-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+      /* Di mobile, tombol diubah menjadi 2 kolom (3 baris) agar lebih mudah ditekan */
       .btn-row {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -241,9 +244,12 @@
         </div>
       </div>
 
+      <!-- Tombol Salin Semua diganti menjadi 3 tombol spesifik -->
       <div class="btn-row">
         <button id="btnHaju" class="btn-haju">🔥 Haju</button>
-        <button id="btnSalin" class="btn-salin">📋 Salin Semua</button>
+        <button id="btnSalin4D" class="btn-salin">📋 Salin 4D</button>
+        <button id="btnSalin3D" class="btn-salin">📋 Salin 3D</button>
+        <button id="btnSalin2D" class="btn-salin">📋 Salin 2D</button>
         <button id="btnSimpan" class="btn-simpan">💾 Simpan</button>
         <button id="btnReset" class="btn-reset">🔄 Reset</button>
       </div>
@@ -343,7 +349,7 @@
       const result3D = d3Combos.join('*');
       const result2D = d2Combos.join('*');
 
-      // Format lengkap untuk salin/simpan: 4D*4D*...*3D*3D*...*2D*2D#
+      // Format lengkap untuk simpan: 4D*4D*...*3D*3D*...*2D*2D#
       const fullResult = `${result4D}*${result3D}*${result2D}#`;
 
       return {
@@ -397,7 +403,12 @@
       const kepalaInput = document.getElementById('kepalaInput');
       const ekorInput = document.getElementById('ekorInput');
       const btnHaju = document.getElementById('btnHaju');
-      const btnSalin = document.getElementById('btnSalin');
+      
+      // Mengambil referensi tombol salin yang baru
+      const btnSalin4D = document.getElementById('btnSalin4D');
+      const btnSalin3D = document.getElementById('btnSalin3D');
+      const btnSalin2D = document.getElementById('btnSalin2D');
+      
       const btnSimpan = document.getElementById('btnSimpan');
       const btnReset = document.getElementById('btnReset');
       const hasil4D = document.getElementById('hasil4D');
@@ -433,12 +444,20 @@
         }
       });
 
-      // Tombol Salin - Salin format lengkap
-      btnSalin.addEventListener('click', () => {
-        salinTeks(currentFullResult);
+      // === EVENT LISTENER TOMBOL SALIN SPESIFIK ===
+      btnSalin4D.addEventListener('click', () => {
+        salinTeks(currentResult4D);
       });
 
-      // Tombol Simpan
+      btnSalin3D.addEventListener('click', () => {
+        salinTeks(currentResult3D);
+      });
+
+      btnSalin2D.addEventListener('click', () => {
+        salinTeks(currentResult2D);
+      });
+
+      // Tombol Simpan (Tetap menggunakan currentFullResult seperti semula)
       btnSimpan.addEventListener('click', () => {
         if (!currentFullResult) {
           return showStatus("⚠️ Tidak ada hasil untuk disimpan", "error");
