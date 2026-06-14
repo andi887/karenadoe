@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>rumah24</title>
+  <title>rumah1</title>
   <style>
     * {
       margin: 0;
@@ -89,7 +89,7 @@
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-top: 10px;
+      margin-bottom: 10px; /* Diubah dari margin-top agar jarak ke tabel di bawahnya rapi */
     }
     button {
       padding: 8px 14px;
@@ -131,6 +131,12 @@
   <div id="market-status"></div>
   <div id="status"></div>
 
+  <!-- Tombol dipindahkan ke atas -->
+  <div class="controls">
+    <button class="add-row-btn" id="add-row">Tambah Baris</button>
+    <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
+  </div>
+
   <div class="table-container">
     <table id="rumah1-table">
       <thead>
@@ -158,11 +164,6 @@
         <!-- Data akan dimuat di sini -->
       </tbody>
     </table>
-  </div>
-
-  <div class="controls">
-    <button class="add-row-btn" id="add-row">Tambah Baris</button>
-    <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
   </div>
 
   <!-- Firebase Dependencies (Compat Mode) -->
@@ -660,7 +661,8 @@
       document.getElementById('add-row').addEventListener('click', () => {
         const tbody = document.querySelector('#rumah1-table tbody');
         const newRow = createRow();
-        tbody.appendChild(newRow);
+        // BARIS BARU SEKARANG DISISIPKAN DI PALING ATAS
+        tbody.insertBefore(newRow, tbody.firstChild);
       });
 
       document.getElementById('save-firebase').addEventListener('click', saveDataToFirebase);
