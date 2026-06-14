@@ -457,7 +457,7 @@
       setTimeout(() => statusEl.textContent = '', 3000);
     }
 
-    // === LOGIKA TABEL (DIPERBARUI: SUPPORT ARAH ATAS & BAWAH) ===
+    // === LOGIKA TABEL (DIPERBAIKI: SEMUA BARIS CARI SUMBER DI BAWAH) ===
     function calculateRow(targetRow) {
       const tbody = targetRow.parentElement;
       const allRows = Array.from(tbody.querySelectorAll('tr'));
@@ -469,7 +469,7 @@
 
       const resTargetValue = inputs[1]?.value || '';
 
-      // 1. LOGIKA BARU: Jika res adalah '----', isi otomatis dengan huruf kolom
+      // 1. LOGIKA: Jika res adalah '----', isi otomatis dengan huruf kolom
       if (resTargetValue === '----') {
         const letterMap = {
           2: 'B', 3: 'C', 4: 'D', 5: 'G', 6: 'H', 7: 'I',
@@ -484,29 +484,14 @@
         return;
       }
 
-      // 2. CARI SUMBER BERDASARKAN POSISI
+      // 2. SEMUA BARIS CARI SUMBER DI BAWAH (index lebih besar)
       let sourceRow = null;
-
-      // Jika baris ini di paling atas → cari ke BAWAH
-      if (targetIndex === 0) {
-        for (let i = targetIndex + 1; i < allRows.length; i++) {
-          const nextInputs = allRows[i].querySelectorAll('td input');
-          const nextRes = nextInputs[1]?.value || '';
-          if (nextRes !== '----' && nextRes !== '') {
-            sourceRow = allRows[i];
-            break;
-          }
-        }
-      } 
-      // Jika bukan di paling atas → cari ke ATAS (logika lama)
-      else {
-        for (let i = targetIndex - 1; i >= 0; i--) {
-          const prevInputs = allRows[i].querySelectorAll('td input');
-          const prevRes = prevInputs[1]?.value || '';
-          if (prevRes !== '----' && prevRes !== '') {
-            sourceRow = allRows[i];
-            break;
-          }
+      for (let i = targetIndex + 1; i < allRows.length; i++) {
+        const nextInputs = allRows[i].querySelectorAll('td input');
+        const nextRes = nextInputs[1]?.value || '';
+        if (nextRes !== '----' && nextRes !== '') {
+          sourceRow = allRows[i];
+          break;
         }
       }
 
@@ -534,11 +519,11 @@
       }
     }
 
-    function recalculateFrom(startingRow) {
-      const tbody = startingRow.parentElement;
+    // DIPERBAIKI: Recalculate SEMUA baris setiap kali ada perubahan
+    function recalculateAll() {
+      const tbody = document.querySelector('#rumah1-table tbody');
       const allRows = Array.from(tbody.querySelectorAll('tr'));
-      const startIndex = allRows.indexOf(startingRow);
-      for (let i = startIndex; i < allRows.length; i++) {
+      for (let i = 0; i < allRows.length; i++) {
         calculateRow(allRows[i]);
       }
     }
@@ -568,9 +553,8 @@
       deleteBtn.addEventListener('click', function () {
         if (confirm("Hapus baris ini?")) {
           const row = this.closest('tr');
-          const next = row.nextElementSibling;
           row.remove();
-          if (next) recalculateFrom(next);
+          recalculateAll(); // DIPERBAIKI: recalculate semua setelah hapus
           saveDataToFirebase();
         }
       });
@@ -578,7 +562,7 @@
       tr.appendChild(actionTd);
 
       tr.addEventListener('input', () => {
-        recalculateFrom(tr);
+        recalculateAll(); // DIPERBAIKI: recalculate semua saat input
       });
 
       return tr;
@@ -639,10 +623,7 @@
             });
             tbody.appendChild(tr);
           });
-          const allRows = Array.from(tbody.querySelectorAll('tr'));
-          for (let i = 1; i < allRows.length; i++) {
-            calculateRow(allRows[i]);
-          }
+          recalculateAll(); // DIPERBAIKI: recalculate semua setelah load
         } else {
           tbody.appendChild(createRow());
         }
