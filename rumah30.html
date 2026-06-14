@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Rumah30 - Masuk</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      background: #f0f2f5;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 10px 20px;
+      background: #2ecc71;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .back-btn:hover {
+      background: #27ae60;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+      color: #2c3e50;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    .login-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .login-card {
+      display: block;
+      padding: 28px 20px;
+      border-radius: 16px;
+      text-decoration: none;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: white;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .login-card:active {
+      transform: translateY(0);
+    }
+
+    .login-card .icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .login-card .name {
+      display: block;
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .login-card .desc {
+      display: block;
+      font-size: 0.85rem;
+      opacity: 0.9;
+      font-weight: normal;
+    }
+
+    .jitu {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .panda {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    @media (min-width: 500px) {
+      .login-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px 16px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .login-card {
+        padding: 24px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Kembali ke Beranda</a>
+
+    <h1>Rumah 30 - Masuk</h1>
+    <p class="subtitle">Silakan pilih situs login di bawah ini</p>
+
+    <div class="login-grid">
+      <a href="https://m6.ttjbronze.com" target="_blank" rel="noopener noreferrer" class="login-card jitu">
+        <span class="icon">🎯</span>
+        <span class="name">JITU</span>
+        <span class="desc">m6.ttjbronze.com</span>
+      </a>
+
+      <a href="https://pandalog222.xyz" target="_blank" rel="noopener noreferrer" class="login-card panda">
+        <span class="icon">🐼</span>
+        <span class="name">PANDA1001</span>
+        <span class="desc">pandalog222.xyz</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
