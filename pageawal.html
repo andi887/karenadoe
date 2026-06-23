@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AKKO - Login</title>
+  <title>SDN 139 LAMANDA - Login</title>
   
   <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -21,123 +21,227 @@
     }
 
     body {
-      background: #f0f2f5 url('https://i.imgur.com/JHcTHJu.jpeg') center/cover no-repeat fixed;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      flex-direction: column;
       -webkit-text-size-adjust: 100%;
     }
 
-    /* ===== LOGIN CARD ===== */
-    .login-card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .login-header {
+    /* ===== HEADER ===== */
+    .header {
+      background: #000;
+      color: #fff;
       text-align: center;
-      margin-bottom: 24px;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
     }
 
-    .login-header h1 {
-      color: #2c3e50;
-      font-size: 1.5rem;
-      margin-bottom: 4px;
+    .header span {
+      color: #FFD700;
     }
 
-    .login-header p {
-      color: #6b7280;
-      font-size: 14px;
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    /* ===== FORM ELEMENTS ===== */
-    .form-group {
-      margin-bottom: 16px;
+    .page-title {
+      color: #fff;
+      font-size: 24px;
+      margin-bottom: 30px;
+      text-align: center;
     }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: #374151;
-      font-size: 14px;
-    }
-
-    .form-group input {
+    /* ===== LOGIN BOX ===== */
+    .login-box {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
       width: 100%;
-      padding: 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
+      max-width: 450px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: #666;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 14px 15px 14px 50px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
       font-size: 16px;
       outline: none;
-      transition: border-color 0.2s;
-      background: white;
+      transition: border-color 0.3s;
     }
 
-    .form-group input:focus {
+    .form-control:focus {
       border-color: #4CAF50;
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
     }
 
-    /* ===== BUTTONS ===== */
+    /* ===== CAPTCHA BOX ===== */
+    .captcha-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .captcha-box .form-control {
+      flex: 1;
+    }
+
+    .captcha-image {
+      background: #f5f5f5;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 20px;
+      letter-spacing: 3px;
+      color: #333;
+      user-select: none;
+    }
+
+    .refresh-captcha {
+      background: #4a5568;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.3s;
+    }
+
+    .refresh-captcha:hover {
+      background: #2d3748;
+    }
+
+    /* ===== BUTTON GROUP ===== */
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
     .btn {
-      width: 100%;
+      flex: 1;
       padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      touch-action: manipulation;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-transform: uppercase;
     }
 
     .btn:active {
       transform: scale(0.98);
     }
 
-    .btn-primary {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #45a049;
-    }
-
     .btn-secondary {
-      background: #f44336;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       color: white;
     }
 
     .btn-secondary:hover {
-      background: #d32f2f;
+      box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
     }
 
-    .btn-text {
-      background: none;
-      color: #3b82f6;
-      padding: 8px;
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+      background: #fffbeb;
+      border: 2px solid #fcd34d;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-top: 25px;
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .info-title {
+      color: #92400e;
+      font-weight: bold;
       font-size: 14px;
-      border: none;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-text {
+      color: #92400e;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ===== BOTTOM NAV ===== */
+    .bottom-nav {
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #666;
+      padding: 5px 20px;
+      transition: color 0.3s;
       cursor: pointer;
     }
 
-    .btn-text:hover {
-      text-decoration: underline;
+    .nav-item:hover {
+      color: #4CAF50;
     }
 
-    /* ===== MESSAGES ===== */
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ===== ERROR MESSAGE ===== */
     .error-msg {
       color: #ef4444;
       font-size: 14px;
-      margin-top: 8px;
+      margin-top: 10px;
       text-align: center;
       min-height: 20px;
     }
@@ -145,113 +249,209 @@
     .success-msg {
       color: #10b981;
       font-size: 14px;
-      margin-top: 8px;
+      margin-top: 10px;
       text-align: center;
       min-height: 20px;
     }
 
-    /* ===== DIVIDER ===== */
-    .divider {
-      text-align: center;
-      margin: 20px 0;
-      color: #9ca3af;
-      font-size: 14px;
-      position: relative;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 40%;
-      height: 1px;
-      background: #e5e7eb;
-    }
-
-    .divider::before {
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
 
-    .divider::after {
-      right: 0;
+    .modal-overlay.active {
+      display: flex;
     }
 
-    /* ===== UTILITY CLASSES ===== */
-    .hidden {
-      display: none !important;
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
-    /* ===== MOBILE OPTIMIZATION ===== */
+    .modal-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn-modal {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-modal-primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-modal-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    /* ===== LOADING ===== */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #fff;
+      border-top-color: #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== MOBILE RESPONSIVE ===== */
     @media (max-width: 480px) {
-      body {
-        padding: 12px;
+      .header {
+        font-size: 24px;
+        padding: 15px;
       }
-      
-      .login-card {
-        padding: 20px 16px;
-        border-radius: 12px;
-      }
-      
-      .login-header h1 {
-        font-size: 1.3rem;
-      }
-      
-      .btn {
-        padding: 16px;
-        font-size: 16px;
-      }
-      
-      .form-group input {
-        font-size: 16px;
-      }
-    }
 
-    /* ===== ACCESSIBILITY ===== */
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
+      .page-title {
+        font-size: 20px;
+        margin-bottom: 20px;
       }
-    }
 
-    :focus-visible {
-      outline: 2px solid #3b82f6;
-      outline-offset: 2px;
+      .login-box {
+        padding: 20px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .captcha-box {
+        flex-wrap: wrap;
+      }
+
+      .captcha-image {
+        font-size: 16px;
+        padding: 10px 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="login-card">
-    <div class="login-header">
-      <h1>🏫 SDN 139 LAMANDA</h1>
-      <p>Silakan login untuk mengakses sistem</p>
+  <!-- Header -->
+  <div class="header">SDN <span>139</span></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1 class="page-title">Login Untuk Masuk</h1>
+
+    <!-- Login Box -->
+    <div class="login-box">
+      <form id="loginForm">
+        <div class="form-group">
+          <span class="form-icon">👤</span>
+          <input type="email" id="email" class="form-control" placeholder="Alamat Email" required>
+        </div>
+
+        <div class="form-group">
+          <span class="form-icon">🔒</span>
+          <input type="password" id="password" class="form-control" placeholder="Password" required>
+        </div>
+
+        <div class="form-group">
+          <div class="captcha-box">
+            <span class="form-icon">🛡️</span>
+            <input type="text" id="captchaInput" class="form-control" placeholder="Captcha" required>
+            <div class="captcha-image" id="captchaDisplay">69554</div>
+            <button type="button" class="refresh-captcha" onclick="refreshCaptcha()">🔄</button>
+          </div>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" onclick="forgotPassword()">Lupa Password</button>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+      </form>
     </div>
 
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="nama@email.com" required>
-      </div>
+    <!-- Info Box -->
+    <div class="info-box">
+      <div class="info-title">📢 JADWAL LIBUR</div>
+      <div class="info-text">pada penaikan kelas kali ini libur hanya 3 minggu</div>
+    </div>
+  </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Masukkan password" required>
-      </div>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="pageawal.html" class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">BERANDA</span>
+    </a>
+    <a href="#" class="nav-item" id="navDaftar">
+      <span class="nav-icon">✍️</span>
+      <span class="nav-label">DAFTAR</span>
+    </a>
+    <a href="#" class="nav-item" id="navEksplor">
+      <span class="nav-icon">🎁</span>
+      <span class="nav-label">EKSPLOR</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">LIVECHAT</span>
+    </a>
+  </nav>
 
-      <div id="errorMsg" class="error-msg"></div>
-      <div id="successMsg" class="success-msg"></div>
-
-      <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
-    </form>
-
-    <div class="divider">atau</div>
-
-    <button type="button" class="btn-text" id="registerBtn">Belum punya akun? Daftar di sini</button>
-    <button type="button" class="btn-text" id="forgotBtn">Lupa password?</button>
+  <!-- Loading Spinner -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
   </div>
 
   <script>
@@ -275,7 +475,25 @@
     const rtdb = firebase.database();
     const db = firebase.firestore();
 
-    // === SESSION MANAGEMENT: Device Limit via Realtime Database ===
+    // === CAPTCHA GENERATOR ===
+    let currentCaptcha = '';
+
+    function generateCaptcha() {
+      const length = 5;
+      let captcha = '';
+      for (let i = 0; i < length; i++) {
+        captcha += Math.floor(Math.random() * 10);
+      }
+      currentCaptcha = captcha;
+      document.getElementById('captchaDisplay').textContent = captcha;
+    }
+
+    function refreshCaptcha() {
+      generateCaptcha();
+      document.getElementById('captchaInput').value = '';
+    }
+
+    // === SESSION MANAGEMENT ===
     async function registerSession(userId, deviceId) {
       try {
         const sessionRef = rtdb.ref(`sessions/${userId}/${deviceId}`);
@@ -287,7 +505,7 @@
         
         await sessionRef.set(sessionData);
         sessionRef.onDisconnect().remove();
-        console.log('✅ Session registered di Realtime Database:', deviceId);
+        console.log('✅ Session registered:', deviceId);
         return true;
       } catch (error) {
         console.error('❌ Session registration failed:', error);
@@ -295,7 +513,7 @@
       }
     }
 
-    // === Fungsi untuk membaca role user dari FIRESTORE ===
+    // === GET USER ROLE FROM FIRESTORE ===
     async function getUserRole(uid) {
       try {
         const userDocRef = db.collection("users").doc(uid);
@@ -303,30 +521,33 @@
         
         if (userSnap.exists) {
           const role = userSnap.data().role;
-          console.log('✅ Role user ditemukan di Firestore:', role);
+          console.log('✅ Role user:', role);
           return role || "user";
         } else {
-          console.log('ℹ️ Dokumen user belum ada di Firestore, default ke "user"');
+          console.log('ℹ️ User role not found, default to "user"');
           return "user";
         }
       } catch (error) {
-        console.warn('⚠️ Gagal membaca role dari Firestore:', error);
+        console.warn('⚠️ Gagal membaca role:', error);
         return "user";
       }
     }
 
-    // === Handle Email/Password Login ===
-    async function handleEmailLogin(email, password) {
+    // === HANDLE LOGIN ===
+    async function handleLogin(email, password, captcha) {
+      // Validasi Captcha
+      if (captcha !== currentCaptcha) {
+        throw new Error('Captcha yang Anda masukkan salah!');
+      }
+
       try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
         
-        console.log('✅ Firebase login BERHASIL untuk:', user.email);
-        console.log('✅ UID Asli dari Firebase:', user.uid);
+        console.log('✅ Login berhasil:', user.email);
         
-        // Baca role user dari Firestore
+        // Baca role user
         const userRole = await getUserRole(user.uid);
-        console.log('✅ Role user:', userRole);
         
         // Simpan data user ke localStorage
         localStorage.setItem('currentUser', JSON.stringify({
@@ -336,123 +557,110 @@
           role: userRole
         }));
         
-        // Simpan role secara terpisah
         localStorage.setItem('userRole', userRole);
         
-        // Register session device di Realtime Database
+        // Register session
         const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
         localStorage.setItem('deviceId', deviceId);
         await registerSession(user.uid, deviceId);
         
-        // ✅ Redirect ke index.html (bukan dashboard.html)
+        // Redirect ke index.html
         window.location.href = './index.html';
         return user;
         
       } catch (error) {
-        console.error('❌ Firebase Login Error:', error.code, error.message);
+        console.error('❌ Login Error:', error.code, error.message);
         
         const messages = {
           'auth/invalid-email': 'Format email tidak valid.',
-          'auth/user-disabled': 'Akun ini telah dinonaktifkan oleh admin.',
-          'auth/user-not-found': 'Email tidak terdaftar di sistem kami.',
-          'auth/wrong-password': 'Password yang Anda masukkan salah.',
-          'auth/too-many-requests': 'Terlalu banyak percobaan gagal. Akun dikunci sementara.',
+          'auth/user-disabled': 'Akun ini telah dinonaktifkan.',
+          'auth/user-not-found': 'Email tidak terdaftar.',
+          'auth/wrong-password': 'Password salah.',
+          'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
           'auth/invalid-credential': 'Email atau password salah.'
         };
         
-        throw new Error(messages[error.code] || 'Login gagal. Periksa koneksi atau kredensial Anda.');
+        throw new Error(messages[error.code] || 'Login gagal. Periksa koneksi Anda.');
       }
     }
 
-    // === Handle Logout ===
-    async function handleLogout() {
-      try {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const deviceId = localStorage.getItem('deviceId');
-        
-        // Hapus session di Realtime Database
-        if (currentUser.uid && deviceId) {
-          try {
-            const sessionRef = rtdb.ref(`sessions/${currentUser.uid}/${deviceId}`);
-            await sessionRef.remove();
-          } catch (e) {
-            console.warn('⚠️ Gagal hapus session RTDB:', e);
-          }
-        }
-        
-        await auth.signOut();
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('userRole');
-        
-        console.log('✅ Logout berhasil');
-        window.location.href = './pageawal.html';
-      } catch (error) {
-        console.error('❌ Logout error:', error);
-        throw new Error('Gagal logout: ' + error.message);
-      }
-    }
-
-    // === Auth State Listener ===
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log('🔐 Auth state: logged in as', user.email);
-      } else {
-        console.log('🔐 Auth state: not logged in');
-      }
-    });
-
-    // === FORM HANDLER ===
-    const loginForm = document.getElementById('loginForm');
-    const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
-    const loginBtn = document.getElementById('loginBtn');
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      
-      errorMsg.textContent = '';
-      successMsg.textContent = '';
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Logging in...';
-      
-      try {
-        await handleEmailLogin(email, password);
-        successMsg.textContent = '✅ Login berhasil! Mengalihkan...';
-      } catch (error) {
-        errorMsg.textContent = '❌ ' + error.message;
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
-      }
-    });
-
-    // === REGISTER BUTTON ===
-    document.getElementById('registerBtn').addEventListener('click', () => {
-      alert('Fitur registrasi akan segera tersedia. Silakan hubungi admin untuk pembuatan akun.');
-    });
-
-    // === FORGOT PASSWORD BUTTON ===
-    document.getElementById('forgotBtn').addEventListener('click', async () => {
+    // === FORGOT PASSWORD ===
+    async function forgotPassword() {
       const email = document.getElementById('email').value.trim();
       
       if (!email) {
-        errorMsg.textContent = '❌ Silakan masukkan email Anda terlebih dahulu.';
+        document.getElementById('errorMsg').textContent = '❌ Silakan masukkan email Anda terlebih dahulu.';
         return;
       }
       
       try {
         await auth.sendPasswordResetEmail(email);
-        successMsg.textContent = '✅ Email reset password telah dikirim ke ' + email;
-        errorMsg.textContent = '';
+        document.getElementById('successMsg').textContent = '✅ Email reset password telah dikirim ke ' + email;
+        document.getElementById('errorMsg').textContent = '';
       } catch (error) {
-        errorMsg.textContent = '❌ Gagal mengirim email: ' + error.message;
-        successMsg.textContent = '';
+        document.getElementById('errorMsg').textContent = '❌ Gagal: ' + error.message;
+        document.getElementById('successMsg').textContent = '';
+      }
+    }
+
+    // === FORM SUBMIT ===
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const captcha = document.getElementById('captchaInput').value.trim();
+      
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      const loading = document.getElementById('loading');
+      const submitBtn = e.target.querySelector('.btn-primary');
+      
+      errorMsg.textContent = '';
+      successMsg.textContent = '';
+      
+      loading.classList.add('active');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      
+      try {
+        await handleLogin(email, password, captcha);
+        successMsg.textContent = '✅ Login berhasil! Mengalihkan...';
+      } catch (error) {
+        errorMsg.textContent = '❌ ' + error.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+        refreshCaptcha();
+      } finally {
+        loading.classList.remove('active');
       }
     });
 
-    console.log('🔐 pageawal.html loaded with Firebase Auth (Compat SDK)');
+    // === NAVIGATION ===
+    document.getElementById('navDaftar').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Fitur pendaftaran akan segera tersedia. Silakan hubungi admin untuk informasi lebih lanjut.');
+    });
+
+    document.getElementById('navEksplor').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Fitur eksplorasi akan segera tersedia. Silakan login untuk melihat dashboard lengkap.');
+    });
+
+    // === INITIALIZE ===
+    window.addEventListener('DOMContentLoaded', () => {
+      generateCaptcha();
+      
+      // Cek apakah user sudah login
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // User sudah login, redirect ke index.html
+          window.location.href = './index.html';
+        }
+      });
+    });
+
+    console.log('🔐 pageawal.html loaded with Firebase Auth');
   </script>
 </body>
 </html>
