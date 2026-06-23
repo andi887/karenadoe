@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Rumah Utama</title>
+  
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  
   <style>
     * {
       box-sizing: border-box;
@@ -47,7 +52,7 @@
       margin-bottom: 18px;
       border: 1px solid #d1d5db;
       border-radius: 12px;
-      font-size: 16px; /* Penting untuk mencegah zoom otomatis di iOS */
+      font-size: 16px;
       outline: none;
     }
 
@@ -118,6 +123,69 @@
       background: #1976D2;
     }
 
+    /* ===== USER INFO & LOGOUT BUTTON ===== */
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      color: white;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .user-info .avatar {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .user-info .details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-info .name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .user-info .role {
+      font-size: 11px;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
+
+    #logoutBtn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin: 0;
+      width: auto;
+    }
+
+    #logoutBtn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
     @media (max-width: 480px) {
       .container {
         padding: 20px 16px;
@@ -128,11 +196,31 @@
       h1 {
         font-size: 1.6rem;
       }
+      .user-bar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+      }
+      #logoutBtn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- User Info Bar -->
+    <div class="user-bar">
+      <div class="user-info">
+        <div class="avatar">👤</div>
+        <div class="details">
+          <span class="name" id="userName">Loading...</span>
+          <span class="role" id="userRole">user</span>
+        </div>
+      </div>
+      <button id="logoutBtn">🚪 Logout</button>
+    </div>
+
     <h1>Rumah Utama</h1>
 
     <label for="period">Pilih Periode / Market</label>
@@ -141,7 +229,7 @@
       <option value="Cambodia">Cambodia</option>
       <option value="Sidney">Sidney</option>
       <option value="China">China</option>
-       <option value="SGP">SGP</option>
+      <option value="SGP">SGP</option>
       <option value="Japan">Japan</option>
       <option value="Taiwan">Taiwan</option>
       <option value="Hongkong">Hongkong</option>
@@ -159,6 +247,88 @@
   </div>
 
   <script>
+    // 🔐 KONFIGURASI FIREBASE (Compat SDK)
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    // Inisialisasi Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+
+    // === PROTEKSI HALAMAN: CEK LOGIN STATUS ===
+    function checkAuth() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      
+      if (!currentUser) {
+        console.log('⚠️ User belum login, redirect ke pageawal.html');
+        window.location.href = './pageawal.html';
+        return false;
+      }
+      
+      // Tampilkan info user
+      document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
+      document.getElementById('userRole').textContent = currentUser.role || 'user';
+      
+      return true;
+    }
+
+    // === LOGOUT FUNCTION ===
+    async function handleLogout() {
+      if (!confirm('Apakah Anda yakin ingin logout?')) return;
+      
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const deviceId = localStorage.getItem('deviceId');
+        
+        // Hapus session di Realtime Database
+        if (currentUser.uid && deviceId) {
+          try {
+            const sessionRef = firebase.database().ref(`sessions/${currentUser.uid}/${deviceId}`);
+            await sessionRef.remove();
+          } catch (e) {
+            console.warn('⚠️ Gagal hapus session:', e);
+          }
+        }
+        
+        // Sign out dari Firebase
+        await auth.signOut();
+        
+        // Hapus semua data dari localStorage
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('deviceId');
+        localStorage.removeItem('marketAktif');
+        
+        console.log('✅ Logout berhasil');
+        
+        // Redirect ke pageawal.html
+        window.location.href = './pageawal.html';
+      } catch (error) {
+        console.error('❌ Logout error:', error);
+        alert('Gagal logout: ' + error.message);
+      }
+    }
+
+    // === AUTH STATE LISTENER ===
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        // User tidak terautentikasi di Firebase, redirect ke login
+        console.log('⚠️ Firebase auth state: not logged in');
+        window.location.href = './pageawal.html';
+      }
+    });
+
+    // === DATA RUMAH ===
     const houseNames = {
       1: 'data statistik',
       2: 'dasar',
@@ -197,6 +367,9 @@
 
     // === MUAT MARKET AKTIF SAAT HALAMAN DIMUAT ===
     document.addEventListener('DOMContentLoaded', () => {
+      // Cek autentikasi dulu
+      if (!checkAuth()) return;
+      
       const savedMarket = localStorage.getItem('marketAktif');
       if (savedMarket) {
         document.getElementById('period').value = savedMarket;
@@ -246,11 +419,9 @@
 
       document.getElementById('childHouses').style.display = 'block';
     }
+
+    // === LOGOUT BUTTON EVENT ===
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
   </script>
 </body>
 </html>
-
-
-
-
-
