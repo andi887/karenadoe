@@ -8,6 +8,10 @@
   <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  
+  <!-- ✅ Load config-firebase.js eksternal -->
+  <script src="./config-firebase.js"></script>
   
   <style>
     * {
@@ -123,7 +127,7 @@
       background: #1976D2;
     }
 
-    /* ===== USER INFO & LOGOUT BUTTON ===== */
+    /* ===== ✅ USER INFO & LOGOUT BUTTON ===== */
     .user-bar {
       display: flex;
       justify-content: space-between;
@@ -209,7 +213,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- User Info Bar -->
+    <!-- ✅ User Info Bar -->
     <div class="user-bar">
       <div class="user-info">
         <div class="avatar">👤</div>
@@ -247,25 +251,11 @@
   </div>
 
   <script>
-    // 🔐 KONFIGURASI FIREBASE (Compat SDK)
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    // Inisialisasi Firebase
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
+    // ✅ Gunakan Firebase yang sudah diinisialisasi oleh config-firebase.js
     const auth = firebase.auth();
+    const rtdb = firebase.database();
 
-    // === PROTEKSI HALAMAN: CEK LOGIN STATUS ===
+    // === ✅ PROTEKSI HALAMAN: CEK LOGIN STATUS ===
     function checkAuth() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
       
@@ -282,7 +272,7 @@
       return true;
     }
 
-    // === LOGOUT FUNCTION ===
+    // === ✅ LOGOUT FUNCTION ===
     async function handleLogout() {
       if (!confirm('Apakah Anda yakin ingin logout?')) return;
       
@@ -290,10 +280,10 @@
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         const deviceId = localStorage.getItem('deviceId');
         
-        // Hapus session di Realtime Database
+        // Hapus session di RTDB
         if (currentUser.uid && deviceId) {
           try {
-            const sessionRef = firebase.database().ref(`sessions/${currentUser.uid}/${deviceId}`);
+            const sessionRef = rtdb.ref(`sessions/${currentUser.uid}/${deviceId}`);
             await sessionRef.remove();
           } catch (e) {
             console.warn('⚠️ Gagal hapus session:', e);
@@ -319,7 +309,7 @@
       }
     }
 
-    // === AUTH STATE LISTENER ===
+    // === ✅ AUTH STATE LISTENER ===
     auth.onAuthStateChanged((user) => {
       if (!user) {
         // User tidak terautentikasi di Firebase, redirect ke login
@@ -367,7 +357,7 @@
 
     // === MUAT MARKET AKTIF SAAT HALAMAN DIMUAT ===
     document.addEventListener('DOMContentLoaded', () => {
-      // Cek autentikasi dulu
+      // ✅ Cek autentikasi dulu
       if (!checkAuth()) return;
       
       const savedMarket = localStorage.getItem('marketAktif');
@@ -420,7 +410,7 @@
       document.getElementById('childHouses').style.display = 'block';
     }
 
-    // === LOGOUT BUTTON EVENT ===
+    // === ✅ LOGOUT BUTTON EVENT ===
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
   </script>
 </body>
