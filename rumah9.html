@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -134,6 +135,7 @@
       font-size: 13px;
       line-height: 1.5;
       margin-bottom: 6px;
+      word-break: break-all;
     }
     .copy-btn {
       background: #9C27B0;
@@ -143,10 +145,41 @@
       border-radius: 4px;
       font-size: 12px;
       cursor: pointer;
+      transition: background 0.3s;
     }
     .copy-btn:hover {
       background: #7B1FA2;
     }
+    
+    /* === STYLE FITUR EDIT BARU === */
+    .edit-btn {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 5px;
+      transition: background 0.3s;
+    }
+    .edit-btn:hover {
+      background: #F57C00;
+    }
+    .edit-area {
+      width: 100%;
+      min-height: 60px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      display: none;
+      margin-bottom: 5px;
+      resize: vertical;
+    }
+
     .section {
       margin-top: 12px;
     }
@@ -161,6 +194,7 @@
       .btn-group { flex-direction: column; }
       .btn-group button { width: 100%; }
       .panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .edit-area { min-height: 80px; }
     }
   </style>
 
@@ -461,7 +495,7 @@
     async function loadFromFirebase(market, panelId) {
       try {
         const { ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        const snapshot = await get(ref(window.db, `rumah9/${market}`)); // ✅ DIPERBAIKI
+        const snapshot = await get(ref(window.db, `rumah9/${market}`)); 
         const data = snapshot.val();
         if (data) {
           const fields = ['A','B','C','D','E','F','G'];
@@ -493,45 +527,39 @@
       };
     }
 
+    // === RENDER OUTPUT (DENGAN FITUR EDIT) ===
     function renderOutput(panelId, result) {
       const { angkaBersih, angkaKhusus, outGroups } = result;
       let html = '';
 
-      // --- Bagian utama: Bersih, Khusus, Out 1x, Out 2x, dll. ---
-      const out1x = outGroups[1] || [];
+      // Helper untuk membuat struktur HTML hasil yang bisa diedit
+      function createSectionHTML(title, displayText, sectionId) {
+        return `<div class="section">
+          <div class="title">${title}</div>
+          <div class="result-box" id="box-${panelId}-${sectionId}">
+            <textarea class="edit-area">${displayText}</textarea>
+            <div class="result">${displayText}</div>
+            <button class="copy-btn" onclick="window.copyResult('box-${panelId}-${sectionId}')">Salin</button>
+            <button class="edit-btn" onclick="window.toggleEdit('box-${panelId}-${sectionId}')">Edit</button>
+          </div>
+        </div>`;
+      }
 
       // Angka Bersih
       angkaBersih.sort();
       const bersihText = angkaBersih.length ? angkaBersih.join('*') : '-';
-      html += `<div class="section">
-        <div class="title">✅ Angka Bersih (${angkaBersih.length} lines)</div>
-        <div class="result-box">
-          <div class="result">${bersihText}#</div>
-          <button class="copy-btn" data-copy="${bersihText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
-        </div>
-      </div>`;
+      html += createSectionHTML(`✅ Angka Bersih (${angkaBersih.length} lines)`, bersihText + '#', 'bersih');
 
       // Angka Khusus
       angkaKhusus.sort();
       const khususText = angkaKhusus.length ? angkaKhusus.join('*') : '-';
-      html += `<div class="section">
-        <div class="title">🌟 Angka Khusus (${angkaKhusus.length} lines)</div>
-        <div class="result-box">
-          <div class="result">${khususText}#</div>
-          <button class="copy-btn" data-copy="${khususText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
-        </div>
-      </div>`;
+      html += createSectionHTML(`🌟 Angka Khusus (${angkaKhusus.length} lines)`, khususText + '#', 'khusus');
 
       // Out 1x
+      const out1x = outGroups[1] || [];
       out1x.sort();
       const out1xText = out1x.length ? out1x.join('*') : '-';
-      html += `<div class="section">
-        <div class="title">⚠️ Out 1x (${out1x.length} lines)</div>
-        <div class="result-box">
-          <div class="result">${out1xText}#</div>
-          <button class="copy-btn" data-copy="${out1xText}#" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
-        </div>
-      </div>`;
+      html += createSectionHTML(`⚠️ Out 1x (${out1x.length} lines)`, out1xText + '#', 'out1');
 
       // Out 2x, 3x, ...
       const maxHit = Math.max(...Object.keys(outGroups).map(Number).filter(k => k !== 1), 0);
@@ -539,31 +567,71 @@
         const list = outGroups[hit] || [];
         if (list.length === 0) continue;
         list.sort();
-        const text = list.join('*') + '#';
-        html += `<div class="section">
-          <div class="title">⚠️ Out ${hit}x (${list.length} lines)</div>
-          <div class="result-box">
-            <div class="result">${text}</div>
-            <button class="copy-btn" data-copy="${text}" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
-          </div>
-        </div>`;
+        const text = list.join('*');
+        html += createSectionHTML(`⚠️ Out ${hit}x (${list.length} lines)`, text + '#', `out${hit}`);
       }
 
-      // --- RANGKUMAN ---
+      // Rangkuman
       const summaryText = bersihText + '#' + '+' + out1xText + '#' + '+' + khususText + '#';
-      html += `<div class="section">
-        <div class="title">📋 Rangkuman</div>
-        <div class="result-box">
-          <div class="result">${summaryText}</div>
-          <button class="copy-btn" data-copy="${summaryText}" onclick="window.copyToClipboard(this.getAttribute('data-copy'))">Salin</button>
-        </div>
-      </div>`;
+      html += createSectionHTML(`📋 Rangkuman`, summaryText, 'rangkuman');
 
       document.getElementById(`output-${panelId}`).innerHTML = html;
     }
 
     // === HANDLER GLOBAL ===
     window.copyToClipboard = copyToClipboard;
+
+    // Handler untuk Toggle Edit
+    window.toggleEdit = (boxId) => {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const resDiv = box.querySelector('.result');
+      const editArea = box.querySelector('.edit-area');
+      const editBtn = box.querySelector('.edit-btn');
+      
+      if (resDiv.style.display !== 'none') {
+        // Masuk mode edit
+        editArea.value = resDiv.textContent;
+        resDiv.style.display = 'none';
+        editArea.style.display = 'block';
+        editBtn.textContent = 'Selesai';
+        editBtn.style.background = '#4CAF50'; // Hijau
+      } else {
+        // Keluar mode edit
+        resDiv.textContent = editArea.value;
+        resDiv.style.display = 'block';
+        editArea.style.display = 'none';
+        editBtn.textContent = 'Edit';
+        editBtn.style.background = '#FF9800'; // Oranye
+      }
+    };
+
+    // Handler untuk Salin (mengambil teks asli atau teks yang sedang diedit)
+    window.copyResult = (boxId) => {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const resDiv = box.querySelector('.result');
+      const editArea = box.querySelector('.edit-area');
+      let textToCopy = '';
+      
+      if (editArea.style.display === 'block') {
+        textToCopy = editArea.value;
+      } else {
+        textToCopy = resDiv.textContent;
+      }
+      
+      copyToClipboard(textToCopy);
+      
+      // Feedback visual tombol salin
+      const copyBtn = box.querySelector('.copy-btn');
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'Tersalin!';
+      copyBtn.style.background = '#27ae60';
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.style.background = '#9C27B0';
+      }, 1500);
+    };
 
     window.handleGenerate = (panelId) => {
       const inputs = getInputs(panelId);
@@ -589,7 +657,7 @@
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "Menyimpan...");
         const { ref, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await set(ref(window.db, `rumah9/${market}`), data); // ✅ DIPERBAIKI
+        await set(ref(window.db, `rumah9/${market}`), data); 
         showMessage(statusEl, "✅ Tersimpan!", false);
       } catch (e) {
         console.error(e);
@@ -609,7 +677,7 @@
       const market = document.querySelector(`#${panelId} .market-select`).value;
       try {
         const { ref, remove } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await remove(ref(window.db, `rumah9/${market}`)); // ✅ DIPERBAIKI
+        await remove(ref(window.db, `rumah9/${market}`)); 
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "✅ Data di cloud dihapus", false);
       } catch (e) {
@@ -641,6 +709,4 @@
     });
   </script>
 </body>
-
 </html>
-
