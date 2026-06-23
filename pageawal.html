@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SDN 139 LAMANDA - Login</title>
+  
+  <!-- Firebase SDK (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  
+  <style>
+    /* ===== RESET & BASE ===== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      background: #f0f2f5 url('https://i.imgur.com/JHcTHJu.jpeg') center/cover no-repeat fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ===== LOGIN CARD ===== */
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-header h1 {
+      color: #2c3e50;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .login-header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    /* ===== FORM ELEMENTS ===== */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .form-group input:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      touch-action: manipulation;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #45a049;
+    }
+
+    .btn-secondary {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #d32f2f;
+    }
+
+    .btn-text {
+      background: none;
+      color: #3b82f6;
+      padding: 8px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-text:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== MESSAGES ===== */
+    .error-msg {
+      color: #ef4444;
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    .success-msg {
+      color: #10b981;
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* ===== DIVIDER ===== */
+    .divider {
+      text-align: center;
+      margin: 20px 0;
+      color: #9ca3af;
+      font-size: 14px;
+      position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    .divider::before {
+      left: 0;
+    }
+
+    .divider::after {
+      right: 0;
+    }
+
+    /* ===== UTILITY CLASSES ===== */
+    .hidden {
+      display: none !important;
+    }
+
+    /* ===== MOBILE OPTIMIZATION ===== */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+      
+      .login-card {
+        padding: 20px 16px;
+        border-radius: 12px;
+      }
+      
+      .login-header h1 {
+        font-size: 1.3rem;
+      }
+      
+      .btn {
+        padding: 16px;
+        font-size: 16px;
+      }
+      
+      .form-group input {
+        font-size: 16px;
+      }
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+    }
+
+    :focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-header">
+      <h1>🏫 SDN 139 LAMANDA</h1>
+      <p>Silakan login untuk mengakses sistem</p>
+    </div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="nama@email.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Masukkan password" required>
+      </div>
+
+      <div id="errorMsg" class="error-msg"></div>
+      <div id="successMsg" class="success-msg"></div>
+
+      <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+    </form>
+
+    <div class="divider">atau</div>
+
+    <button type="button" class="btn-text" id="registerBtn">Belum punya akun? Daftar di sini</button>
+    <button type="button" class="btn-text" id="forgotBtn">Lupa password?</button>
+  </div>
+
+  <script>
+    // 🔐 KONFIGURASI FIREBASE (Compat SDK)
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    // Inisialisasi Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    const rtdb = firebase.database();
+    const db = firebase.firestore();
+
+    // === SESSION MANAGEMENT: Device Limit via Realtime Database ===
+    async function registerSession(userId, deviceId) {
+      try {
+        const sessionRef = rtdb.ref(`sessions/${userId}/${deviceId}`);
+        const sessionData = {
+          lastActive: Date.now(),
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        };
+        
+        await sessionRef.set(sessionData);
+        sessionRef.onDisconnect().remove();
+        console.log('✅ Session registered di Realtime Database:', deviceId);
+        return true;
+      } catch (error) {
+        console.error('❌ Session registration failed:', error);
+        return false;
+      }
+    }
+
+    // === Fungsi untuk membaca role user dari FIRESTORE ===
+    async function getUserRole(uid) {
+      try {
+        const userDocRef = db.collection("users").doc(uid);
+        const userSnap = await userDocRef.get();
+        
+        if (userSnap.exists) {
+          const role = userSnap.data().role;
+          console.log('✅ Role user ditemukan di Firestore:', role);
+          return role || "user";
+        } else {
+          console.log('ℹ️ Dokumen user belum ada di Firestore, default ke "user"');
+          return "user";
+        }
+      } catch (error) {
+        console.warn('⚠️ Gagal membaca role dari Firestore:', error);
+        return "user";
+      }
+    }
+
+    // === Handle Email/Password Login ===
+    async function handleEmailLogin(email, password) {
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        console.log('✅ Firebase login BERHASIL untuk:', user.email);
+        console.log('✅ UID Asli dari Firebase:', user.uid);
+        
+        // Baca role user dari Firestore
+        const userRole = await getUserRole(user.uid);
+        console.log('✅ Role user:', userRole);
+        
+        // Simpan data user ke localStorage
+        localStorage.setItem('currentUser', JSON.stringify({
+          uid: user.uid, 
+          email: user.email,
+          displayName: user.displayName || email.split('@')[0],
+          role: userRole
+        }));
+        
+        // Simpan role secara terpisah
+        localStorage.setItem('userRole', userRole);
+        
+        // Register session device di Realtime Database
+        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+        localStorage.setItem('deviceId', deviceId);
+        await registerSession(user.uid, deviceId);
+        
+        // ✅ Redirect ke index.html (bukan dashboard.html)
+        window.location.href = './index.html';
+        return user;
+        
+      } catch (error) {
+        console.error('❌ Firebase Login Error:', error.code, error.message);
+        
+        const messages = {
+          'auth/invalid-email': 'Format email tidak valid.',
+          'auth/user-disabled': 'Akun ini telah dinonaktifkan oleh admin.',
+          'auth/user-not-found': 'Email tidak terdaftar di sistem kami.',
+          'auth/wrong-password': 'Password yang Anda masukkan salah.',
+          'auth/too-many-requests': 'Terlalu banyak percobaan gagal. Akun dikunci sementara.',
+          'auth/invalid-credential': 'Email atau password salah.'
+        };
+        
+        throw new Error(messages[error.code] || 'Login gagal. Periksa koneksi atau kredensial Anda.');
+      }
+    }
+
+    // === Handle Logout ===
+    async function handleLogout() {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const deviceId = localStorage.getItem('deviceId');
+        
+        // Hapus session di Realtime Database
+        if (currentUser.uid && deviceId) {
+          try {
+            const sessionRef = rtdb.ref(`sessions/${currentUser.uid}/${deviceId}`);
+            await sessionRef.remove();
+          } catch (e) {
+            console.warn('⚠️ Gagal hapus session RTDB:', e);
+          }
+        }
+        
+        await auth.signOut();
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userRole');
+        
+        console.log('✅ Logout berhasil');
+        window.location.href = './pageawal.html';
+      } catch (error) {
+        console.error('❌ Logout error:', error);
+        throw new Error('Gagal logout: ' + error.message);
+      }
+    }
+
+    // === Auth State Listener ===
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('🔐 Auth state: logged in as', user.email);
+      } else {
+        console.log('🔐 Auth state: not logged in');
+      }
+    });
+
+    // === FORM HANDLER ===
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      errorMsg.textContent = '';
+      successMsg.textContent = '';
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+      
+      try {
+        await handleEmailLogin(email, password);
+        successMsg.textContent = '✅ Login berhasil! Mengalihkan...';
+      } catch (error) {
+        errorMsg.textContent = '❌ ' + error.message;
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+
+    // === REGISTER BUTTON ===
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      alert('Fitur registrasi akan segera tersedia. Silakan hubungi admin untuk pembuatan akun.');
+    });
+
+    // === FORGOT PASSWORD BUTTON ===
+    document.getElementById('forgotBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      
+      if (!email) {
+        errorMsg.textContent = '❌ Silakan masukkan email Anda terlebih dahulu.';
+        return;
+      }
+      
+      try {
+        await auth.sendPasswordResetEmail(email);
+        successMsg.textContent = '✅ Email reset password telah dikirim ke ' + email;
+        errorMsg.textContent = '';
+      } catch (error) {
+        errorMsg.textContent = '❌ Gagal mengirim email: ' + error.message;
+        successMsg.textContent = '';
+      }
+    });
+
+    console.log('🔐 pageawal.html loaded with Firebase Auth (Compat SDK)');
+  </script>
+</body>
+</html>
