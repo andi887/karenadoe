@@ -433,7 +433,7 @@
       }
     }
 
-    // === ✅ UPDATED: GET USER ROLE FROM RTDB (bukan Firestore) ===
+    // === GET USER ROLE FROM RTDB ===
     async function getUserRole(uid) {
       try {
         const userRef = rtdb.ref(`users/${uid}`);
@@ -468,7 +468,7 @@
         console.log('✅ Login berhasil:', user.email);
         console.log('✅ UID:', user.uid);
         
-        // ✅ Baca role user dari RTDB
+        // Baca role user dari RTDB
         const userRole = await getUserRole(user.uid);
         console.log('✅ Role:', userRole);
         
@@ -487,8 +487,10 @@
         localStorage.setItem('deviceId', deviceId);
         await registerSession(user.uid, deviceId);
         
-        // Redirect ke index.html
-        window.location.href = './index.html';
+        // ✅ HAPUS REDIRECT MANUAL DI SINI
+        // Redirect akan ditangani oleh onAuthStateChanged listener
+        // Tidak perlu window.location.href = './index.html' di sini
+        
         return user;
         
       } catch (error) {
@@ -550,12 +552,13 @@
       try {
         await handleLogin(email, password, captcha);
         successMsg.textContent = '✅ Login berhasil! Mengalihkan...';
+        // ✅ TIDAK PERLU REDIRECT DI SINI
+        // onAuthStateChanged akan otomatis redirect
       } catch (error) {
         errorMsg.textContent = '❌ ' + error.message;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Sign In';
         refreshCaptcha();
-      } finally {
         loading.classList.remove('active');
       }
     });
@@ -575,10 +578,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       generateCaptcha();
       
-      // Cek apakah user sudah login
+      // ✅ SINGLE POINT OF REDIRECT - Hanya di sini
       auth.onAuthStateChanged((user) => {
         if (user) {
-          // User sudah login, redirect ke index.html
+          console.log('🔐 User logged in, redirecting to index.html');
           window.location.href = './index.html';
         }
       });
