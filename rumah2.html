@@ -356,8 +356,9 @@
           showStatus("ℹ️ Kurang dari 2 result valid di rumah1.", "error");
           return;
         }
-        const prev = validRows[validRows.length - 2][1];
-        const curr = validRows[validRows.length - 1][1];
+        // ✅ REVISI: Data terbaru sekarang di index 0, data kedua terbaru di index 1
+        const curr = validRows[0][1];
+        const prev = validRows[1][1];
         document.getElementById('resultSebelum').value = prev;
         document.getElementById('resultSekarang').value = curr;
         showStatus("✅ 2 result terakhir dari rumah1 dimuat.", "success");
