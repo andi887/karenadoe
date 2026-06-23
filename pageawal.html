@@ -9,7 +9,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  
+  <!-- ✅ Load config-firebase.js eksternal -->
+  <script src="./config-firebase.js"></script>
   
   <style>
     /* ===== RESET & BASE ===== */
@@ -254,72 +256,6 @@
       min-height: 20px;
     }
 
-    /* ===== MODAL ===== */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .modal-header h2 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-
-    .modal-body {
-      margin-bottom: 20px;
-    }
-
-    .modal-footer {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .btn-modal {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn-modal-primary {
-      background: #4CAF50;
-      color: white;
-    }
-
-    .btn-modal-secondary {
-      background: #e0e0e0;
-      color: #333;
-    }
-
     /* ===== LOADING ===== */
     .loading {
       position: fixed;
@@ -455,25 +391,9 @@
   </div>
 
   <script>
-    // 🔐 KONFIGURASI FIREBASE (Compat SDK)
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    // Inisialisasi Firebase
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
+    // ✅ Gunakan Firebase yang sudah diinisialisasi oleh config-firebase.js
     const auth = firebase.auth();
     const rtdb = firebase.database();
-    const db = firebase.firestore();
 
     // === CAPTCHA GENERATOR ===
     let currentCaptcha = '';
@@ -513,22 +433,23 @@
       }
     }
 
-    // === GET USER ROLE FROM FIRESTORE ===
+    // === ✅ UPDATED: GET USER ROLE FROM RTDB (bukan Firestore) ===
     async function getUserRole(uid) {
       try {
-        const userDocRef = db.collection("users").doc(uid);
-        const userSnap = await userDocRef.get();
+        const userRef = rtdb.ref(`users/${uid}`);
+        const snapshot = await userRef.once('value');
         
-        if (userSnap.exists) {
-          const role = userSnap.data().role;
-          console.log('✅ Role user:', role);
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          const role = userData.role;
+          console.log('✅ Role user dari RTDB:', role);
           return role || "user";
         } else {
-          console.log('ℹ️ User role not found, default to "user"');
+          console.log('ℹ️ User data not found in RTDB, default to "user"');
           return "user";
         }
       } catch (error) {
-        console.warn('⚠️ Gagal membaca role:', error);
+        console.warn('⚠️ Gagal membaca role dari RTDB:', error);
         return "user";
       }
     }
@@ -545,9 +466,11 @@
         const user = userCredential.user;
         
         console.log('✅ Login berhasil:', user.email);
+        console.log('✅ UID:', user.uid);
         
-        // Baca role user
+        // ✅ Baca role user dari RTDB
         const userRole = await getUserRole(user.uid);
+        console.log('✅ Role:', userRole);
         
         // Simpan data user ke localStorage
         localStorage.setItem('currentUser', JSON.stringify({
@@ -577,7 +500,8 @@
           'auth/user-not-found': 'Email tidak terdaftar.',
           'auth/wrong-password': 'Password salah.',
           'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
-          'auth/invalid-credential': 'Email atau password salah.'
+          'auth/invalid-credential': 'Email atau password salah.',
+          'auth/configuration-not-found': 'Konfigurasi Firebase tidak ditemukan. Cek console.'
         };
         
         throw new Error(messages[error.code] || 'Login gagal. Periksa koneksi Anda.');
@@ -660,7 +584,7 @@
       });
     });
 
-    console.log('🔐 pageawal.html loaded with Firebase Auth');
+    console.log('🔐 pageawal.html loaded with Firebase Auth (RTDB version)');
   </script>
 </body>
 </html>
