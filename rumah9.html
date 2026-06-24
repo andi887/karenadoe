@@ -196,51 +196,13 @@
     }
   </style>
 
-  <!-- 🔥 Firebase SDK (Modular) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    if (!window.firebaseApp) {
-      const app = initializeApp(firebaseConfig);
-      window.firebaseApp = app;
-      window.db = getDatabase(app);
-      window.auth = getAuth(app);
-      
-      // ✅ PERBAIKAN UTAMA: Gunakan authStateReady() untuk menunggu sesi pulih
-      window.auth.authStateReady().then(() => {
-        const user = window.auth.currentUser;
-        if (user) {
-          console.log('✅ [rumah9] User login terdeteksi:', user.email);
-          window.authReady = true;
-          window.currentUser = user;
-        } else {
-          console.log('⚠️ [rumah9] User belum login!');
-          window.authReady = false;
-          window.currentUser = null;
-        }
-        // Beri tahu script biasa bahwa auth sudah siap
-        window.dispatchEvent(new CustomEvent('authReady'));
-      }).catch(err => {
-        console.error('Auth error:', err);
-        window.authReady = false;
-      });
-    }
-  </script>
+  <!--  Firebase SDK (Compat Version - Sama seperti rumah1-4) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h1>🔢 saringandua</h1>
+  <h1> saringandua</h1>
 
   <div class="back-home">
     <a href="index.html">🔙 Kembali ke Beranda</a>
@@ -255,16 +217,31 @@
   </div>
 
   <script>
-    // === KONFIGURASI ===
+    // === KONFIGURASI FIREBASE ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
+      authDomain: "sabar-2e686.firebaseapp.com",
+      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sabar-2e686",
+      storageBucket: "sabar-2e686.firebasestorage.app",
+      messagingSenderId: "985183830784",
+      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
+    };
+
+    // Inisialisasi Firebase (Compat)
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // === KONFIGURASI APLIKASI ===
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
     let panelCount = 0;
     const allPanels = new Map();
-    
-    // Inisialisasi flag
-    window.authReady = false;
-    window.currentUser = null;
+    let authReady = false;
 
-    // === HELPER FUNGSI ===
+    // === HELPER FUNGSI (100% UTUH) ===
     function hitungDasar2D_2digit(duaDigit) {
       const a = parseInt(duaDigit[0], 10);
       const b = parseInt(duaDigit[1], 10);
@@ -355,7 +332,7 @@
       setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 3000);
     }
 
-    // === LOGIKA INTI: GENERATE PER PANEL ===
+    // === LOGIKA INTI: GENERATE PER PANEL (100% UTUH) ===
     function generateSaringan(inputs) {
       const {
         A_input, B_input, C_input, D_input, E_input, F_input, G_input
@@ -495,7 +472,7 @@
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
-          if (window.authReady) {
+          if (authReady) {
             loadFromFirebase(newMarket, panelId);
           }
         }
@@ -504,21 +481,17 @@
       document.getElementById('panels-container').appendChild(el);
       allPanels.set(market, { el, panelId });
       
-      if (window.authReady) {
+      if (authReady) {
         loadFromFirebase(market, panelId);
       }
     }
 
-    // === FIREBASE: LOAD & SAVE PER MARKET ===
+    // === FIREBASE: LOAD & SAVE (Menggunakan Compat SDK) ===
     async function loadFromFirebase(market, panelId) {
-      if (!window.authReady) {
-        console.warn('⚠️ Auth belum ready, menunda load untuk', market);
-        return;
-      }
+      if (!authReady) return;
       
       try {
-        const { ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        const snapshot = await get(ref(window.db, `rumah9/${market}`)); 
+        const snapshot = await db.ref(`rumah9/${market}`).once('value'); 
         const data = snapshot.val();
         if (data) {
           const fields = ['A','B','C','D','E','F','G'];
@@ -550,7 +523,7 @@
       };
     }
 
-    // === RENDER OUTPUT ===
+    // === RENDER OUTPUT (100% UTUH) ===
     function renderOutput(panelId, result) {
       const { angkaBersih, angkaKhusus, outGroups } = result;
       let html = '';
@@ -652,9 +625,8 @@
     };
 
     window.handleSave = async (panelId) => {
-      if (!window.authReady) {
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Menunggu login...", true);
         return;
       }
       
@@ -674,20 +646,17 @@
       try {
         const statusEl = document.getElementById(`status-${panelId}`);
         showMessage(statusEl, "Menyimpan...");
-        const { ref, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await set(ref(window.db, `rumah9/${market}`), data); 
+        await db.ref(`rumah9/${market}`).set(data); 
         showMessage(statusEl, "✅ Tersimpan!", false);
       } catch (e) {
         console.error(e);
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "❌ Gagal simpan", true);
+        showMessage(document.getElementById(`status-${panelId}`), "❌ Gagal simpan", true);
       }
     };
 
     window.handleClear = async (panelId) => {
-      if (!window.authReady) {
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "⚠️ Auth belum ready, silakan tunggu...", true);
+      if (!authReady) {
+        showMessage(document.getElementById(`status-${panelId}`), "⚠️ Menunggu login...", true);
         return;
       }
       
@@ -700,13 +669,10 @@
 
       const market = document.querySelector(`#${panelId} .market-select`).value;
       try {
-        const { ref, remove } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-        await remove(ref(window.db, `rumah9/${market}`)); 
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "✅ Data di cloud dihapus", false);
+        await db.ref(`rumah9/${market}`).remove(); 
+        showMessage(document.getElementById(`status-${panelId}`), "✅ Data di cloud dihapus", false);
       } catch (e) {
-        const statusEl = document.getElementById(`status-${panelId}`);
-        showMessage(statusEl, "️ Input lokal dihapus", false);
+        showMessage(document.getElementById(`status-${panelId}`), "️ Input lokal dihapus", false);
       }
     };
 
@@ -722,27 +688,25 @@
     };
 
     // ============================================
-    // ✅ PERBAIKAN UTAMA: Gunakan custom event + fallback
+    // ✅ PERBAIKAN UTAMA: Gunakan onAuthStateChanged (Compat)
     // ============================================
-    document.addEventListener('DOMContentLoaded', () => {
-      // Tunggu custom event 'authReady' dari script module
-      window.addEventListener('authReady', () => {
-        console.log('🎉 Auth ready event diterima, membuat panel...');
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ [rumah9] User login terdeteksi:', user.email);
+        authReady = true;
+        
+        // Buat panel pertama jika belum ada
         if (allPanels.size === 0) {
           createPanel('cambodia');
         } else {
+          // Reload data untuk panel yang sudah ada
           allPanels.forEach((data, market) => {
             loadFromFirebase(market, data.panelId);
           });
         }
-      });
-      
-      // Fallback: jika auth sudah ready sebelum event listener dipasang
-      if (window.authReady) {
-        console.log('✅ Auth sudah ready (fallback), membuat panel...');
-        if (allPanels.size === 0) {
-          createPanel('cambodia');
-        }
+      } else {
+        console.log('⚠️ [rumah9] User belum login!');
+        authReady = false;
       }
     });
   </script>
