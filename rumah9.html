@@ -197,10 +197,11 @@
     }
   </style>
 
-  <!-- 🔥 Firebase SDK -->
+  <!-- 🔥 Firebase SDK (Modular) - DIPERBAIKI: Tambah Auth -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     // 🔐 Ganti ke proyek SABAR
     const firebaseConfig = {
@@ -217,6 +218,8 @@
       const app = initializeApp(firebaseConfig);
       window.firebaseApp = app;
       window.db = getDatabase(app);
+      // ✅ PERBAIKAN 1: Expose auth ke window
+      window.auth = getAuth(app);
     }
   </script>
 </head>
@@ -240,6 +243,9 @@
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
     let panelCount = 0;
     const allPanels = new Map();
+    
+    // ✅ PERBAIKAN 2: Flag untuk tracking auth status
+    let authReady = false;
 
     // === HELPER FUNGSI ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -481,13 +487,20 @@
           const data = allPanels.get(oldKey);
           allPanels.delete(oldKey);
           allPanels.set(newMarket, data);
-          loadFromFirebase(newMarket, panelId);
+          // ✅ PERBAIKAN 3: Hanya load jika auth ready
+          if (authReady) {
+            loadFromFirebase(newMarket, panelId);
+          }
         }
       };
 
       document.getElementById('panels-container').appendChild(el);
       allPanels.set(market, { el, panelId });
-      loadFromFirebase(market, panelId);
+      
+      // ✅ PERBAIKAN 4: Hanya load jika auth ready
+      if (authReady) {
+        loadFromFirebase(market, panelId);
+      }
     }
 
     // === FIREBASE: LOAD & SAVE PER MARKET (PATH: rumah9) ===
@@ -696,15 +709,46 @@
       createPanel(nextMarket);
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const init = () => {
-        if (window.db) {
-          createPanel('cambodia');
+    // ============================================
+    // ✅ PERBAIKAN UTAMA: Tunggu login, baru buat panel & load data
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Tunggu sampai window.auth tersedia (dari script module)
+      const waitForAuth = () => new Promise((resolve) => {
+        const check = () => {
+          if (window.auth) {
+            resolve();
+          } else {
+            setTimeout(check, 100);
+          }
+        };
+        check();
+      });
+      
+      await waitForAuth();
+      
+      // Import onAuthStateChanged dari modular SDK
+      const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      
+      onAuthStateChanged(window.auth, (user) => {
+        if (user) {
+          console.log('✅ [rumah9] User login terdeteksi:', user.email);
+          authReady = true;
+          
+          // Buat panel pertama dan load data
+          if (allPanels.size === 0) {
+            createPanel('cambodia');
+          } else {
+            // Reload data untuk panel yang sudah ada
+            allPanels.forEach((data, market) => {
+              loadFromFirebase(market, data.panelId);
+            });
+          }
         } else {
-          setTimeout(init, 100);
+          console.log('⚠️ [rumah9] User belum login!');
+          authReady = false;
         }
-      };
-      init();
+      });
     });
   </script>
 </body>
