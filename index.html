@@ -32,22 +32,6 @@
 
     <h1>Rumah Utama</h1>
 
-    <!-- ✅ BARU: Section Pilih Layanan (Hanya untuk Admin) -->
-    <div id="layananSection" style="display: none;">
-      <label for="layananSelect">Pilih Layanan</label>
-      <select id="layananSelect">
-        <option value="">-- Pilih Layanan --</option>
-        <option value="control-center">🛡️ Control Center (Admin)</option>
-      </select>
-
-      <div class="button-group">
-        <button id="saveLayananBtn" class="btn-save">Simpan Layanan</button>
-        <button id="resetLayananBtn" class="btn-reset">Reset</button>
-      </div>
-
-      <div id="layananStatus"></div>
-    </div>
-
     <label for="period">Pilih Periode / Market</label>
     <select id="period">
       <option value="">-- Pilih Market --</option>
@@ -58,8 +42,8 @@
       <option value="Japan">Japan</option>
       <option value="Taiwan">Taiwan</option>
       <option value="Hongkong">Hongkong</option>
-       <option value="Hongkong">control centre</option>
-      
+      <!-- ✅ Opsi Control Center (value = control-center) -->
+      <option value="control-center" id="controlCenterOption" style="display: none;">🛡️ Control Centre (Admin)</option>
     </select>
 
     <div id="status"></div>
@@ -72,7 +56,7 @@
       <div class="house-grid" id="houseList"></div>
     </div>
 
-    <!-- ✅ BARU: Panel Control Center (Muncul setelah admin pilih layanan) -->
+    <!-- ✅ Panel Control Center (Muncul setelah admin pilih "control-center") -->
     <div id="controlCenterPanel" style="display: none;">
       <div class="control-header">
         <h2>🛡️ Fitur Internal: Control Center (Admin)</h2>
@@ -89,7 +73,7 @@
           <div class="feature-text">Data & Statistik</div>
         </div>
         <div class="feature-card">
-          <div class="feature-icon"></div>
+          <div class="feature-icon">🔒</div>
           <div class="feature-text">Keamanan & Log</div>
         </div>
         <div class="feature-card">
@@ -107,7 +91,7 @@
         <h3>⚙️ Pengaturan Situs</h3>
         
         <div class="info-description">
-          <p> Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
+          <p>📌 Tambahkan beberapa pengumuman. Setiap pengumuman akan tampil bergantian di halaman login. Durasi tampil diacak antara 6-12 detik.</p>
         </div>
 
         <button id="addAnnouncementBtn" class="btn-add">➕ Tambah Pengumuman Baru</button>
