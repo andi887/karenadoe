@@ -196,14 +196,14 @@
     }
   </style>
 
-  <!-- Firebase SDK (Compat Version - Sama seperti rumah1-4) -->
+  <!-- Firebase SDK (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 </head>
 <body>
-  <h1> saringandua</h1>
+  <h1>🔢 saringandua</h1>
 
   <div class="back-home">
     <a href="index.html">🔙 Kembali ke Beranda</a>
@@ -214,7 +214,9 @@
   </div>
 
   <div id="panels-container">
-    <!-- Panel pertama akan dibuat oleh init -->
+    <div style="text-align: center; padding: 40px;">
+      <p>⏳ Memeriksa status login...</p>
+    </div>
   </div>
 
   <script>
@@ -222,20 +224,11 @@
     const MARKETS = ["cambodia", "sidney", "china", "japan", "sgp", "taiwan", "hongkong"];
     let panelCount = 0;
     const allPanels = new Map();
-    
-    // ✅ PERBAIKAN UTAMA: Cek login dari localStorage (sama seperti index.js)
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
     let authReady = false;
-    
-    if (currentUser && currentUser.uid) {
-      console.log('✅ [rumah9] User terdeteksi dari localStorage:', currentUser.email);
-      authReady = true;
-    } else {
-      console.log('⚠️ [rumah9] User belum login (tidak ada di localStorage)');
-    }
 
     // Inisialisasi Firebase
     const db = firebase.database();
+    const auth = firebase.auth();
 
     // === HELPER FUNGSI (100% UTUH) ===
     function hitungDasar2D_2digit(duaDigit) {
@@ -684,14 +677,19 @@
     };
 
     // ============================================
-    // ✅ INISIALISASI: Langsung buat panel jika sudah login
+    // ✅ PERBAIKAN UTAMA: Tunggu Firebase Auth restore session
     // ============================================
-    document.addEventListener('DOMContentLoaded', () => {
-      if (authReady) {
-        console.log('✅ [rumah9] Memulai aplikasi, membuat panel...');
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ [rumah9] Firebase Auth: User login terdeteksi:', user.email);
+        authReady = true;
+        
+        // Buat panel pertama
+        document.getElementById('panels-container').innerHTML = '';
         createPanel('cambodia');
       } else {
-        console.log('️ [rumah9] User belum login. Silakan login di pageawal.html');
+        console.log('⚠️ [rumah9] Firebase Auth: User belum login');
+        authReady = false;
         document.getElementById('panels-container').innerHTML = `
           <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeaa7;">
             <h3>⚠️ Akses Ditolak</h3>
