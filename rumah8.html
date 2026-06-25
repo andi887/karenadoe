@@ -228,13 +228,11 @@
     const auth = firebase.auth();
     let authReady = false;
     
-    // ✅ PERBAIKAN UTAMA: Tunggu Firebase Auth restore session
     auth.onAuthStateChanged((user) => {
       if (user) {
         authReady = true;
         console.log('✅ [rumah8] Firebase Auth: User login terdeteksi:', user.email);
         
-        // Setelah login, load data terakhir
         const marketSelect = document.getElementById('market');
         const lastMarket = localStorage.getItem('rumah8_lastMarket');
         
@@ -285,6 +283,7 @@
       return pairs.join('*');
     }
 
+    // ✅ DIPERBAIKI: Load dari Rumah1 dengan debug logging + fallback
     async function loadFromRumah1(market) {
       if (!market || !MARKETS.includes(market)) {
         showNotification("⚠️ Pilih market terlebih dahulu!", "error");
@@ -297,28 +296,90 @@
       }
 
       try {
+        console.log('🔍 Mencoba load data dari rumah1/' + market + '/data');
         const snapshot = await firebase.database().ref(`rumah1/${market}/data`).once('value');
 
         if (!snapshot.exists()) {
+          console.log('❌ Data tidak ada untuk market:', market);
           showNotification(`ℹ️ Tidak ada data untuk ${market} di rumah1`, "info");
           return;
         }
 
         const data = snapshot.val();
-        if (!Array.isArray(data) || data.length === 0) {
+        console.log('📊 Data mentah dari Firebase:', data);
+        console.log('📊 Type of data:', typeof data, 'Is array:', Array.isArray(data));
+
+        if (!data) {
           showNotification(`Data untuk ${market} kosong`, "info");
           return;
         }
 
-        const firstRow = data[0];
-        if (!Array.isArray(firstRow) || firstRow.length < 2) {
-          showNotification("Format baris data tidak valid", "error");
-          return;
+        let resValue = null;
+
+        // ✅ FALLBACK 1: Jika data adalah array 2D (format rumah1.html)
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('📋 Format: Array 2D, panjang:', data.length);
+          
+          // Cari baris pertama yang memiliki result 4D valid
+          for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            console.log(`🔍 Cek baris ${i}:`, row);
+            
+            if (Array.isArray(row) && row.length >= 2) {
+              const candidate = (row[1] || "").toString().trim();
+              console.log(`  Kandidat result: "${candidate}"`);
+              
+              if (/^\d{4}$/.test(candidate)) {
+                resValue = candidate;
+                console.log(`✅ Result valid ditemukan di baris ${i}: ${resValue}`);
+                break;
+              }
+            }
+          }
+        }
+        // ✅ FALLBACK 2: Jika data adalah object (format lama)
+        else if (typeof data === 'object' && !Array.isArray(data)) {
+          console.log('📋 Format: Object');
+          const entries = Object.values(data);
+          console.log('📋 Entries:', entries);
+          
+          // Cari entri terbaru yang memiliki field 'res' atau result 4D
+          for (let i = entries.length - 1; i >= 0; i--) {
+            const entry = entries[i];
+            console.log(`🔍 Cek entry ${i}:`, entry);
+            
+            if (entry && typeof entry === 'object') {
+              // Coba field 'res'
+              if (entry.res && /^\d{4}$/.test(entry.res.toString().trim())) {
+                resValue = entry.res.toString().trim();
+                console.log(`✅ Result valid ditemukan di field 'res': ${resValue}`);
+                break;
+              }
+              // Coba field 'result'
+              if (entry.result && /^\d{4}$/.test(entry.result.toString().trim())) {
+                resValue = entry.result.toString().trim();
+                console.log(`✅ Result valid ditemukan di field 'result': ${resValue}`);
+                break;
+              }
+              // Coba array [0], [1], dll
+              if (Array.isArray(entry)) {
+                for (let j = 0; j < entry.length; j++) {
+                  const candidate = (entry[j] || "").toString().trim();
+                  if (/^\d{4}$/.test(candidate)) {
+                    resValue = candidate;
+                    console.log(`✅ Result valid ditemukan di array[${j}]: ${resValue}`);
+                    break;
+                  }
+                }
+                if (resValue) break;
+              }
+            }
+          }
         }
 
-        const resValue = (firstRow[1] || "").toString().trim();
-        if (!/^\d{4}$/.test(resValue)) {
-          showNotification(`Result tidak valid: "${resValue}"`, "error");
+        if (!resValue) {
+          console.error('❌ Tidak ditemukan result 4D valid dalam data');
+          showNotification("❌ Tidak ditemukan result 4D valid di data rumah1. Cek Console untuk detail.", "error");
           return;
         }
 
@@ -330,7 +391,7 @@
         showNotification(`✅ Result ${resValue} dimuat dari rumah1`, "success");
 
       } catch (err) {
-        console.error("Error muat dari rumah1:", err);
+        console.error("❌ Error muat dari rumah1:", err);
         showNotification("❌ Gagal memuat data: " + (err.message || "Cek koneksi"), "error");
       }
     }
@@ -486,7 +547,6 @@
     document.getElementById('saveBtn').addEventListener('click', saveToCloud);
     document.getElementById('copySummaryBtn').addEventListener('click', copySummary);
 
-    // ✅ DIPERBAIKI: Setup event listener untuk ganti market setelah auth ready
     document.getElementById('market').addEventListener('change', (e) => {
       const newMarket = e.target.value;
       if (newMarket && authReady) {
