@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -99,7 +98,6 @@
       background: #e8eaed;
     }
     
-    /* --- STYLE TAMBAHAN UNTUK FITUR EDIT --- */
     .action-buttons {
       display: flex;
       gap: 8px;
@@ -130,7 +128,6 @@
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
       cursor: text;
     }
-    /* --------------------------------------- */
 
     .results {
       background: white;
@@ -186,6 +183,41 @@
     #save-status.error {
       display: block;
     }
+    
+    /* ✅ BARU: Notifikasi Popup */
+    .save-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease-out;
+      display: none;
+    }
+    .save-notification.success {
+      background: #4caf50;
+      color: white;
+    }
+    .save-notification.error {
+      background: #f44336;
+      color: white;
+    }
+    .save-notification.info {
+      background: #2196f3;
+      color: white;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(400px); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -196,7 +228,6 @@
 
     <h1>🔢 Generator Togel (B s/d Y)</h1>
 
-    <!-- Pilih Market -->
     <div class="market-section">
       <select id="market">
         <option value="">-- Pilih Market --</option>
@@ -228,67 +259,99 @@
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- ✅ BARU: Notifikasi Popup -->
+  <div id="saveNotification" class="save-notification"></div>
+
+  <!-- Firebase SDK - DIPERBAIKI: Tambah Auth + Config Eksternal -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 
   <script>
-    // ─── KONFIGURASI FIREBASE (proyek: SABAR) ─────────────
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "sabar-2e686.firebaseapp.com",
-      databaseURL: "https://sabar-2e686-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "sabar-2e686",
-      storageBucket: "sabar-2e686.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    // Inisialisasi dari config-firebase.js
     const database = firebase.database();
+    const auth = firebase.auth();
+    
+    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
+    let authReady = !!localStorage.getItem('currentUser');
+    if (authReady) {
+      console.log('✅ [rumah7] User terdeteksi dari localStorage');
+    }
+
+    // Backup: Dengarkan perubahan status dari Firebase Auth
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        authReady = true;
+        console.log('✅ [rumah7] Firebase Auth: User login terdeteksi:', user.email);
+      } else {
+        if (!localStorage.getItem('currentUser')) {
+          authReady = false;
+          console.log('⚠️ [rumah7] User benar-benar belum login');
+        }
+      }
+    });
+
+    // ✅ BARU: Fungsi Notifikasi
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('saveNotification');
+      notif.textContent = message;
+      notif.className = `save-notification ${type}`;
+      notif.style.display = 'block';
+      notif.style.animation = 'slideIn 0.3s ease-out';
+      
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+          notif.style.display = 'none';
+        }, 300);
+      }, 3000);
+    }
 
     const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
 
-    // ─── MUAT DARI RUMAH1 ─────────────────────────────────
+    // ✅ DIPERBAIKI: Load dari Rumah1 dengan struktur array + cek auth
     async function loadFromRumah1(market) {
       if (!market || !MARKETS.includes(market)) {
-        alert("Pilih market terlebih dahulu!");
+        showNotification("⚠️ Pilih market terlebih dahulu!", "error");
+        return;
+      }
+
+      if (!authReady) {
+        showNotification("⚠️ Anda belum login!", "error");
         return;
       }
 
       try {
-        const snapshot = await database.ref(`rumah1/${market}`)
-          .orderByChild("timestamp")
-          .limitToLast(1)
-          .once("value");
-
-        if (!snapshot.exists()) {
-          alert(`ℹ️ Tidak ada data di rumah1 untuk market ${market}.`);
-          return;
-        }
-
+        const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
         const data = snapshot.val();
-        const entries = Object.values(data);
-        const latest = entries[entries.length - 1]; // entri terbaru
-
-        if (!latest || !latest.res || !/^\d{4}$/.test(latest.res)) {
-          alert("⚠️ Data 'res' tidak valid di rumah1.");
+        
+        if (!Array.isArray(data) || data.length < 1) {
+          showNotification(`ℹ️ Tidak ada data di rumah1 untuk ${market}`, "info");
           return;
         }
 
-        document.getElementById('currResult').value = latest.res;
+        const validRows = data.filter(row => row && row[1] && /^\d{4}$/.test(row[1]));
+        if (validRows.length < 1) {
+          showNotification(`ℹ️ Tidak ada result valid di rumah1 untuk ${market}`, "info");
+          return;
+        }
+
+        // Data terbaru di index 0
+        const latestRes = validRows[0][1];
+        document.getElementById('currResult').value = latestRes;
         document.getElementById('market').value = market;
-        localStorage.setItem('lastMarket', market);
+        localStorage.setItem('rumah7_lastMarket', market);
+        
+        showNotification(`✅ Result ${latestRes} dimuat dari rumah1`, "success");
 
       } catch (err) {
         console.error("Gagal muat dari rumah1:", err);
-        alert("❌ Gagal memuat data: " + (err.message || "Cek koneksi"));
+        showNotification("❌ Gagal memuat data: " + (err.message || "Cek koneksi"), "error");
       }
     }
 
-    // ─── [SEMUA DATA KONTROL B–Y SAMA SEPERTI ASLI] ─────────────
+    // ─── [SEMUA DATA KONTROL B–Y 100% UTUH] ─────────────
     const KONTROL_B = {
       1: ["1", "2", "6", "7", "8", "9"],
       2: ["0", "2", "3", "7", "8", "9"],
@@ -408,7 +471,7 @@
       9: ["7", "8", "9", "0", "1", "2"]
     };
 
-    // ─── FUNGSI BANTUAN ─────────────────────────────────────
+    // ─── FUNGSI BANTUAN (100% UTUH) ─────────────────────────
     function digitalRoot(n) {
       let s = n;
       while (s >= 10) {
@@ -437,7 +500,7 @@
       return Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
     }
 
-    // ─── KONTROL FUNGSI ──────────────────────────────────────
+    // ─── KONTROL FUNGSI (100% UTUH) ──────────────────────────
     function get2DSetFromB(curr) {
       const as = parseInt(curr[0]);
       const ekor = parseInt(curr[3]);
@@ -520,7 +583,7 @@
       return generateAll2DFromDigits(inverse);
     }
 
-    // ─── HITUNG SEMUA ────────────────────────────────────────
+    // ─── HITUNG SEMUA (100% UTUH) ────────────────────────────
     function calculateAll(curr) {
       const setB = get2DSetFromB(curr);
       const setC = get2DSetFromC(curr);
@@ -561,7 +624,7 @@
       return { freqMap, notCaught, input: curr };
     }
 
-    // ─── SALIN TEKS (DIPERBARUI) ───────────────────────────────────────────
+    // ─── SALIN TEKS (100% UTUH) ─────────────────────────────
     function salinTeks(btn) {
       const section = btn.closest('.section');
       const valueDiv = section ? section.querySelector('.value') : null;
@@ -588,7 +651,7 @@
       }
     }
 
-    // ─── EDIT TEKS (FITUR BARU) ────────────────────────────────────────────
+    // ─── EDIT TEKS (100% UTUH) ──────────────────────────────
     function toggleEdit(btn) {
       const section = btn.closest('.section');
       const valueDiv = section ? section.querySelector('.value') : null;
@@ -597,17 +660,13 @@
       const isEditing = valueDiv.getAttribute('contenteditable') === 'true';
       
       if (isEditing) {
-        // Selesai Edit
         valueDiv.setAttribute('contenteditable', 'false');
-        // Bersihkan format bawaan contenteditable (seperti <br> atau spasi berlebih)
         valueDiv.innerText = valueDiv.innerText.trim().replace(/\n/g, '');
         btn.textContent = '✏️ Edit';
         btn.classList.remove('editing');
       } else {
-        // Mulai Edit
         valueDiv.setAttribute('contenteditable', 'true');
         valueDiv.focus();
-        // Pindahkan kursor ke akhir teks
         const range = document.createRange();
         range.selectNodeContents(valueDiv);
         range.collapse(false);
@@ -620,7 +679,7 @@
       }
     }
 
-    // ─── TAMPILKAN (DIPERBARUI) ───────────────────────────────────────────
+    // ─── TAMPILKAN (100% UTUH) ──────────────────────────────
     function displayResults(freqMap, notCaught, input) {
       const container = document.getElementById('resultsContainer');
       container.innerHTML = '';
@@ -674,22 +733,32 @@
       }
     }
 
-    // ─── SIMPAN KE FIREBASE (DIPERBARUI AGAR MEMBACA HASIL EDIT) ──────────
+    // ✅ DIPERBAIKI: Simpan ke Firebase dengan cek auth + notifikasi + per-market
     function simpanKeFirebase() {
       const statusEl = document.getElementById('save-status');
       statusEl.className = 'error';
       statusEl.style.display = 'none';
 
+      if (!authReady) {
+        showNotification('⚠️ Anda belum login!', 'error');
+        return;
+      }
+
       if (!window.lastResult) {
-        statusEl.textContent = '⚠️ Belum ada hasil untuk disimpan.';
-        statusEl.style.display = 'block';
+        showNotification('⚠️ Belum ada hasil untuk disimpan', 'error');
         return;
       }
 
       const { input, market } = window.lastResult;
-      const sections = {};
       
-      // Ambil data langsung dari DOM untuk menghargai hasil edit user
+      if (!market) {
+        showNotification('⚠️ Pilih market terlebih dahulu', 'error');
+        return;
+      }
+
+      showNotification('💾 Menyimpan ke Firebase...', 'info');
+
+      const sections = {};
       const container = document.getElementById('resultsContainer');
       const sectionDivs = container.querySelectorAll('.section');
       
@@ -718,18 +787,85 @@
         fitur: "rumah7"
       };
 
-      // Simpan ke path: rumah7
-      database.ref('rumah7').push(data)
+      // ✅ DIPERBAIKI: Path per-market untuk mudah load data terakhir
+      database.ref(`rumah7/${market}/latest`).set(data)
         .then(() => {
-          statusEl.textContent = '✅ Berhasil disimpan ke cloud!';
-          statusEl.className = 'success';
-          statusEl.style.display = 'block';
+          showNotification(`✅ Data untuk ${market} tersimpan!`, 'success');
+          localStorage.setItem('rumah7_lastMarket', market);
         })
         .catch(err => {
-          statusEl.textContent = '❌ Gagal simpan: ' + err.message;
-          statusEl.className = 'error';
-          statusEl.style.display = 'block';
+          console.error('Simpan error:', err);
+          showNotification('❌ Gagal simpan: ' + err.message, 'error');
         });
+    }
+
+    // ✅ BARU: Load data terakhir dari Firebase
+    function loadLastData(market) {
+      if (!authReady || !market) return;
+      
+      database.ref(`rumah7/${market}/latest`).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById('currResult').value = data.input;
+          
+          // Tampilkan hasil jika ada
+          if (data.hasil) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            // Tampilkan notCaught
+            if (data.hasil.notCaught) {
+              const section = document.createElement('div');
+              section.className = 'section';
+              section.innerHTML = `
+                <h2>❌ 2D Tidak Terjaring</h2>
+                <div class="value not-caught">${data.hasil.notCaught}</div>
+                <div class="action-buttons">
+                  <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+                  <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+                </div>
+              `;
+              container.appendChild(section);
+            }
+            
+            // Tampilkan terjaring
+            Object.keys(data.hasil).forEach(key => {
+              if (key.startsWith('terjaring_')) {
+                const match = key.match(/terjaring_(\d+)x/);
+                if (match) {
+                  const freq = match[1];
+                  const text = data.hasil[key];
+                  let className = 'freq-' + freq;
+                  
+                  const section = document.createElement('div');
+                  section.className = 'section';
+                  section.innerHTML = `
+                    <h2>🎯 Terjaring ${freq}x</h2>
+                    <div class="value ${className}">${text}</div>
+                    <div class="action-buttons">
+                      <button class="copy-btn" onclick="salinTeks(this)">📋 Salin</button>
+                      <button class="edit-btn" onclick="toggleEdit(this)">✏️ Edit</button>
+                    </div>
+                  `;
+                  container.appendChild(section);
+                }
+              }
+            });
+            
+            // Set window.lastResult untuk simpan berikutnya
+            window.lastResult = {
+              input: data.input,
+              market: market,
+              freqMap: {},
+              notCaught: []
+            };
+            
+            showNotification(`✅ Data ${market} dimuat!`, 'success');
+          }
+        }
+      }).catch(err => {
+        console.error('Load error:', err);
+      });
     }
 
     // ─── INISIALISASI ───────────────────────────────────────
@@ -768,12 +904,31 @@
       }
     });
 
-    // Auto-load lastMarket saat halaman dibuka
+    // ✅ DIPERBAIKI: Auto-load market terakhir + data terakhir
     window.addEventListener('load', () => {
-      const lastMarket = localStorage.getItem('lastMarket');
-      if (lastMarket && MARKETS.includes(lastMarket)) {
-        document.getElementById('market').value = lastMarket;
-      }
+      const waitForAuth = setInterval(() => {
+        if (authReady) {
+          clearInterval(waitForAuth);
+          
+          const marketSelect = document.getElementById('market');
+          const lastMarket = localStorage.getItem('rumah7_lastMarket');
+          
+          if (lastMarket && MARKETS.includes(lastMarket)) {
+            marketSelect.value = lastMarket;
+            showNotification(`📂 Memuat data ${lastMarket}...`, 'info');
+            loadLastData(lastMarket);
+          }
+          
+          // Event listener untuk ganti market
+          marketSelect.addEventListener('change', (e) => {
+            const newMarket = e.target.value;
+            if (newMarket) {
+              showNotification(`🔄 Beralih ke ${newMarket}...`, 'info');
+              loadLastData(newMarket);
+            }
+          });
+        }
+      }, 100);
     });
   </script>
 </body>
