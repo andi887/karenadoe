@@ -312,12 +312,13 @@
     <div class="footer">Hasil acak dan independen. Gunakan untuk eksplorasi pola saja.</div>
   </div>
 
-  <!-- 🔥 Firebase SDK -->
+  <!-- 🔥 Firebase SDK - DIPERBAIKI: Tambah Auth -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
-    // 🔐 Konfigurasi Firebase — proyek SABAR (sama dengan rumah1)
+    // 🔐 Konfigurasi Firebase — proyek SABAR
     const firebaseConfig = {
       apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
       authDomain: "sabar-2e686.firebaseapp.com",
@@ -332,8 +333,12 @@
       firebase.initializeApp(firebaseConfig);
     }
     const database = firebase.database();
+    const auth = firebase.auth();
     let currentDataId = null;
     let selectedMarket = null;
+    
+    // ✅ PERBAIKAN: Flag untuk tracking auth status
+    let authReady = false;
 
     (function(){
       const id = s => document.getElementById(s);
@@ -361,7 +366,7 @@
 
       const MARKETS = ["Cambodia", "Sidney", "China", "Japan", "SGP", "Taiwan", "Hongkong", "Nusa"];
 
-      // === Fungsi logika perhitungan (tidak diubah) ===
+      // === Fungsi logika perhitungan (100% UTUH) ===
       function isValid4D(str){
         return typeof str === 'string' && str.length === 4 && /^[0-9]{4}$/.test(str);
       }
@@ -468,6 +473,12 @@
       // === ✅ REVISI: Muat 5 result terbaru dari rumah1/{market}/data ===
       async function loadResultsFromRumah1(market) {
         if (!market || !MARKETS.includes(market)) return;
+        
+        // ✅ PERBAIKAN: Cek auth sebelum load
+        if (!authReady) {
+          alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
+          return;
+        }
 
         try {
           const snapshot = await database.ref(`rumah1/${market}/data`).once('value');
@@ -484,12 +495,9 @@
             return;
           }
 
-          // ✅ Data terbaru di index 0, ambil 5 data pertama
-          // Lalu reverse agar urutan dari tertua (r1) ke terbaru (r5)
           const last5 = validRows.slice(0, 5).reverse();
           const results = last5.map(row => row[1]);
 
-          // Isi input dari tertua → terbaru
           inputs.forEach((input, i) => {
             input.value = results[i] || '';
           });
@@ -505,8 +513,14 @@
         }
       }
 
-      // === Fungsi Simpan dan Hapus (tidak diubah) ===
+      // === Fungsi Simpan dan Hapus (100% UTUH + cek auth) ===
       btnSave.addEventListener('click', async () => {
+        // ✅ PERBAIKAN: Cek auth sebelum save
+        if (!authReady) {
+          alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
+          return;
+        }
+        
         const market = marketSelect.value;
         if (!market || !MARKETS.includes(market)) {
           alert("Pilih market terlebih dahulu!");
@@ -550,6 +564,12 @@
       });
 
       btnDelete.addEventListener('click', async () => {
+        // ✅ PERBAIKAN: Cek auth sebelum delete
+        if (!authReady) {
+          alert("⚠️ Menunggu login... Silakan tunggu sebentar.");
+          return;
+        }
+        
         if (!currentDataId || !selectedMarket) {
           alert("Tidak ada data yang disimpan untuk dihapus.");
           return;
@@ -568,7 +588,7 @@
         }
       });
 
-      // === Fungsi Render (tidak diubah) ===
+      // === Fungsi Render (100% UTUH) ===
       function render(results, heads, freq, mk, rh, pmedian, pmissing, praw, score, market){
         warn.style.display = 'none';
         out.style.display = 'grid';
@@ -614,7 +634,7 @@
         });
       }
 
-      // === Event Listeners Asli ===
+      // === Event Listeners Asli (100% UTUH) ===
       btnCalc.addEventListener('click', ()=>{
         const market = marketSelect.value;
         if (!market || !MARKETS.includes(market)) {
@@ -703,6 +723,19 @@
       });
 
     })();
+
+    // ============================================
+    // ✅ PERBAIKAN UTAMA: Tunggu login sebelum load data
+    // ============================================
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('✅ [rumah5] User login terdeteksi:', user.email);
+        authReady = true;
+      } else {
+        console.log('⚠️ [rumah5] User belum login!');
+        authReady = false;
+      }
+    });
   </script>
 </body>
 </html>
