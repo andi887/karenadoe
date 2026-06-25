@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📝 Rumah18 - Catatan Penting</title>
+  <title>📝 Rumah17 - Catatan Penting</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -109,24 +109,35 @@
     <div id="status" class="status" style="display: none;"></div>
   </div>
 
-  <script type="module">
-    // 🔌 Firebase Imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  <!-- 🔥 Firebase SDK - DIPERBAIKI: Gunakan Compat + Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="./config-firebase.js"></script>
 
-    // 🔑 Firebase Config (sama seperti rumah1)
-    const firebaseConfig = {
-      apiKey: "AIzaSyALc-1SYjzRUcB-Ws01rab1mxlmcv2e6dA",
-      authDomain: "nomoromosse.firebaseapp.com",
-      databaseURL: "https://nomoromosse-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "nomoromosse",
-      storageBucket: "nomoromosse.firebasestorage.app",
-      messagingSenderId: "985183830784",
-      appId: "1:985183830784:web:fae21bdb94c1f0103769e5"
-    };
+  <script>
+    // Inisialisasi dari config-firebase.js
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
+    let authReady = !!localStorage.getItem('currentUser');
+    if (authReady) {
+      console.log('✅ [rumah17] User terdeteksi dari localStorage');
+    }
+
+    // Backup: Dengarkan perubahan status dari Firebase Auth
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        authReady = true;
+        console.log('✅ [rumah17] Firebase Auth: User login terdeteksi:', user.email);
+      } else {
+        if (!localStorage.getItem('currentUser')) {
+          authReady = false;
+          console.log('⚠️ [rumah17] User benar-benar belum login');
+        }
+      }
+    });
 
     // DOM Elements
     const marketSelect = document.getElementById('market-select');
@@ -135,7 +146,7 @@
     const btnSalin = document.getElementById('btn-salin');
     const statusDiv = document.getElementById('status');
 
-    // Fungsi Tampilkan Status
+    // Fungsi Tampilkan Status (100% UTUH)
     function showStatus(msg, isSuccess = true) {
       statusDiv.textContent = msg;
       statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
@@ -143,7 +154,7 @@
       setTimeout(() => statusDiv.style.display = 'none', 3000);
     }
 
-    // 🔽 Load catatan saat market dipilih
+    // 🔽 Load catatan saat market dipilih (100% UTUH + cek auth)
     marketSelect.addEventListener('change', async () => {
       const market = marketSelect.value;
       if (!market) {
@@ -151,24 +162,37 @@
         return;
       }
 
+      // ✅ PERBAIKAN: Cek auth sebelum load
+      if (!authReady) {
+        showStatus("⚠️ Anda belum login. Silakan login dulu.", false);
+        return;
+      }
+
       try {
-        const snapshot = await get(ref(db, `rumah18/${market}`));
+        // ✅ DIPERBAIKI: Path dari rumah18 → rumah17
+        const snapshot = await db.ref(`rumah17/${market}`).once('value');
         if (snapshot.exists()) {
           catatanArea.value = snapshot.val().catatan || '';
           showStatus(`✅ Catatan untuk ${market} dimuat.`, true);
         } else {
           catatanArea.value = '';
-          showStatus(`ℹ️ Belum ada catatan untuk ${market}.`, false);
+          showStatus(`ℹ️ Belum ada catatan untuk ${market}.`, true);
         }
       } catch (err) {
         console.error("Gagal muat catatan:", err);
-        showStatus("❌ Gagal muat catatan.", false);
+        showStatus("❌ Gagal muat catatan: " + err.message, false);
         catatanArea.value = '';
       }
     });
 
-    // 💾 Simpan ke Firebase
+    // 💾 Simpan ke Firebase (100% UTUH + cek auth)
     btnSimpan.addEventListener('click', async () => {
+      // ✅ PERBAIKAN: Cek auth sebelum save
+      if (!authReady) {
+        showStatus("⚠️ Anda belum login. Silakan login dulu.", false);
+        return;
+      }
+
       const market = marketSelect.value;
       const catatan = catatanArea.value.trim();
 
@@ -178,18 +202,19 @@
       }
 
       try {
-        await set(ref(db, `rumah18/${market}`), {
+        // ✅ DIPERBAIKI: Path dari rumah18 → rumah17
+        await db.ref(`rumah17/${market}`).set({
           catatan: catatan,
           lastUpdated: new Date().toISOString()
         });
         showStatus(`✅ Catatan untuk ${market} tersimpan!`, true);
       } catch (err) {
         console.error("Gagal simpan:", err);
-        showStatus("❌ Gagal menyimpan catatan.", false);
+        showStatus("❌ Gagal menyimpan catatan: " + err.message, false);
       }
     });
 
-    // 📋 Salin Isi Catatan
+    // 📋 Salin Isi Catatan (100% UTUH)
     btnSalin.addEventListener('click', () => {
       const text = catatanArea.value;
       if (!text) {
