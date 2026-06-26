@@ -201,13 +201,33 @@
     <button class="save-firebase-btn" id="save-firebase">Simpan ke Firebase</button>
   </div>
 
-  <!-- Firebase -->
+  <!-- Firebase SDK - DIPERBAIKI: Tambah Auth -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="./config-firebase.js"></script>
 
   <script>
-    // === FUNGSI BANTU ===
+    // ✅ PERBAIKAN: Cek login dari localStorage (Instan)
+    let authReady = !!localStorage.getItem('currentUser');
+    if (authReady) {
+      console.log('✅ [rumah10] User terdeteksi dari localStorage');
+    }
+
+    // Backup: Dengarkan perubahan status dari Firebase Auth
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        authReady = true;
+        console.log('✅ [rumah10] Firebase Auth: User login terdeteksi:', user.email);
+      } else {
+        if (!localStorage.getItem('currentUser')) {
+          authReady = false;
+          console.log('⚠️ [rumah10] User benar-benar belum login');
+        }
+      }
+    });
+
+    // === FUNGSI BANTU (100% UTUH) ===
     function formatTanggalInput(inputElement) {
       inputElement.addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, '');
@@ -226,7 +246,7 @@
       setTimeout(() => statusEl.textContent = '', 3000);
     }
 
-    // === HITUNG RUMUS LEMAH (COPY-PASTE 100% DARI RUMAH3) ===
+    // === HITUNG RUMUS LEMAH (100% UTUH) ===
     function hitungRumusLemah(tglSeb, tglSkr, resSebelum, resSekarang) {
       const kamarRumus = {};
       for (let i = 1; i <= 12; i++) kamarRumus[i] = new Set();
@@ -236,7 +256,6 @@
       let str4DLalu = resSebelum.toString().padStart(4, '0');
       const AS_Lalu = +str4DLalu[0];
 
-      // Fungsi bantu lokal
       function angkaKeShio(n) { n = n % 12; return n === 0 ? 12 : n; }
       function getIndex(angka) { return (angka + 5) % 10; }
       function hitungDasar2D(duaD) {
@@ -311,7 +330,7 @@
       return kamarRumus;
     }
 
-    // === TAMPILKAN HASIL DI TABEL ===
+    // === TAMPILKAN HASIL DI TABEL (100% UTUH) ===
     function tampilkanHasil(row, kamarRumus) {
       const cells = row.querySelectorAll('td input');
       for (let i = 2; i <= 13; i++) {
@@ -328,7 +347,7 @@
       }
     }
 
-    // === PERHITUNGAN BARIS ===
+    // === PERHITUNGAN BARIS (100% UTUH) ===
     function calculateRow(targetRow) {
       const tbody = targetRow.parentElement;
       const allRows = Array.from(tbody.querySelectorAll('tr'));
@@ -363,7 +382,7 @@
       }
     }
 
-    // === BUAT BARIS ===
+    // === BUAT BARIS (100% UTUH) ===
     function createRow() {
       const tr = document.createElement("tr");
       for (let i = 0; i < 14; i++) {
@@ -413,8 +432,14 @@
       return tr;
     }
 
-    // === FIREBASE ===
+    // ✅ DIPERBAIKI: FIREBASE - Tambah cek auth
     function saveDataToFirebase() {
+      // Cek auth
+      if (!authReady) {
+        showStatus("⚠️ Anda belum login. Silakan login dulu.", false);
+        return;
+      }
+
       const market = document.getElementById('marketSelect').value;
       if (!market) {
         showStatus("⚠️ Pilih market terlebih dahulu.", false);
@@ -431,7 +456,7 @@
           .then(() => showStatus("✓ Data disimpan ke Firebase", true))
           .catch(err => {
             console.error("Firebase save error:", err);
-            showStatus("✗ Gagal simpan ke Firebase", false);
+            showStatus("✗ Gagal simpan ke Firebase: " + err.message, false);
           });
       } catch (error) {
         console.error("Save error:", error);
@@ -439,11 +464,19 @@
       }
     }
 
+    // ✅ DIPERBAIKI: Tambah cek auth
     async function loadDataFromFirebase(market) {
       if (!market) {
         const tbody = document.querySelector('#kamar10-table tbody');
         tbody.innerHTML = "";
         tbody.appendChild(createRow());
+        return;
+      }
+
+      // Cek auth
+      if (!authReady) {
+        console.warn('⚠️ Auth belum ready, menunda load');
+        setTimeout(() => loadDataFromFirebase(market), 500);
         return;
       }
 
@@ -492,7 +525,7 @@
       const marketSelect = document.getElementById('marketSelect');
       const marketStatusEl = document.getElementById('market-status');
 
-      // Cek data dari rumah3
+      // Cek data dari rumah3 (100% UTUH)
       const importData = localStorage.getItem('kamar10_import');
       if (importData) {
         const data = JSON.parse(importData);
@@ -526,7 +559,13 @@
         if (marketAktif) {
           marketSelect.value = marketAktif;
           marketStatusEl.textContent = `📊 Market aktif: ${marketAktif}`;
-          setTimeout(() => loadDataFromFirebase(marketAktif), 300);
+          // ✅ DIPERBAIKI: Tunggu auth ready sebelum load
+          const waitForAuth = setInterval(() => {
+            if (authReady) {
+              clearInterval(waitForAuth);
+              loadDataFromFirebase(marketAktif);
+            }
+          }, 100);
         } else {
           marketStatusEl.textContent = "⚠️ Pilih market terlebih dahulu.";
           marketStatusEl.style.color = "#f44336";
