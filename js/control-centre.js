@@ -1,3 +1,9 @@
+// ============================================
+// CONTROL CENTER.JS - ADMIN PANEL
+// ============================================
+
+console.log('🛡️ control-center.js dimuat...');
+
 // ✅ Proteksi: Hanya admin yang bisa akses halaman ini
 (function() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -27,9 +33,91 @@ function initControlCenter() {
     window.location.href = './index.html';
   });
 
+  // ============================================
+  // ✅ BARU: NAVIGASI ANTAR FITUR CONTROL CENTER
+  // ============================================
+  
+  // Fungsi helper untuk menampilkan sub-panel
+  function showPanel(panelId) {
+    // Sembunyikan semua sub-panel
+    document.querySelectorAll('.sub-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+    
+    // Hapus class active dari semua kartu
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.classList.remove('active');
+    });
+    
+    // Tampilkan panel yang dipilih
+    if (panelId) {
+      const panel = document.getElementById(panelId);
+      if (panel) {
+        panel.classList.add('active');
+        // Scroll smooth ke panel
+        setTimeout(() => {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }
+
+  // ✅ Event Listener: Kartu Pengaturan Situs
+  const cardPengaturan = document.getElementById('cardPengaturan');
+  if (cardPengaturan) {
+    cardPengaturan.addEventListener('click', () => {
+      cardPengaturan.classList.add('active');
+      showPanel('subPanelPengaturan');
+      loadAnnouncements(); // Load data pengumuman saat panel dibuka
+    });
+  }
+
+  // ✅ Event Listener: Kartu Data & Statistik
+  const cardDataStatistik = document.getElementById('cardDataStatistik');
+  if (cardDataStatistik) {
+    cardDataStatistik.addEventListener('click', () => {
+      cardDataStatistik.classList.add('active');
+      showPanel('subPanelStatistik');
+    });
+  }
+
+  // ✅ Event Listener: Kartu Monitoring (REDIRECT ke monitoring.html)
+  const cardMonitoring = document.getElementById('cardMonitoring');
+  if (cardMonitoring) {
+    cardMonitoring.addEventListener('click', () => {
+      cardMonitoring.classList.add('active');
+      // Langsung redirect ke halaman monitoring
+      window.location.href = './monitoring.html';
+    });
+  }
+
+  // ✅ Event Listener: Kartu Manajemen User
+  const cardManajemenUser = document.getElementById('cardManajemenUser');
+  if (cardManajemenUser) {
+    cardManajemenUser.addEventListener('click', () => {
+      cardManajemenUser.classList.add('active');
+      showPanel('subPanelManajemen');
+    });
+  }
+
+  // ✅ Event Listener: Kartu Keamanan & Log
+  const cardKeamanan = document.getElementById('cardKeamanan');
+  if (cardKeamanan) {
+    cardKeamanan.addEventListener('click', () => {
+      cardKeamanan.classList.add('active');
+      showPanel('subPanelKeamanan');
+    });
+  }
+
+  // ============================================
+  // FITUR PENGUMUMAN (EXISTING - 100% UTUH)
+  // ============================================
+
   // === TAMBAH PENGUMUMAN ===
   function addAnnouncementCard(title = '', content = '', index = 0) {
     const container = document.getElementById('announcementsContainer');
+    if (!container) return;
+    
     const card = document.createElement('div');
     card.className = 'announcement-card';
     card.innerHTML = `
@@ -46,8 +134,10 @@ function initControlCenter() {
   // === HAPUS PENGUMUMAN ===
   window.removeAnnouncement = function(btn) {
     const card = btn.closest('.announcement-card');
-    card.remove();
-    updateAnnouncementNumbers();
+    if (card) {
+      card.remove();
+      updateAnnouncementNumbers();
+    }
   };
 
   // === UPDATE NOMOR ===
@@ -55,84 +145,93 @@ function initControlCenter() {
     const cards = document.querySelectorAll('.announcement-card');
     cards.forEach((card, index) => {
       const h4 = card.querySelector('h4');
-      h4.textContent = `Pengumuman #${index + 1}`;
+      if (h4) h4.textContent = `Pengumuman #${index + 1}`;
     });
   }
 
   // === TAMBAH BARU ===
-  document.getElementById('addAnnouncementBtn').addEventListener('click', () => {
-    const cards = document.querySelectorAll('.announcement-card');
-    addAnnouncementCard('', '', cards.length);
-  });
+  const addBtn = document.getElementById('addAnnouncementBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const cards = document.querySelectorAll('.announcement-card');
+      addAnnouncementCard('', '', cards.length);
+    });
+  }
 
   // === SIMPAN PENGUMUMAN ===
-  document.getElementById('saveAnnouncementsBtn').addEventListener('click', async () => {
-    const cards = document.querySelectorAll('.announcement-card');
-    const announcements = [];
-    
-    cards.forEach(card => {
-      const title = card.querySelector('.announcement-title').value.trim();
-      const content = card.querySelector('.announcement-content').value.trim();
+  const saveBtn = document.getElementById('saveAnnouncementsBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const cards = document.querySelectorAll('.announcement-card');
+      const announcements = [];
       
-      if (title && content) {
-        announcements.push({ title, content });
-      }
-    });
-    
-    const statusEl = document.getElementById('statusMsg');
-    
-    if (announcements.length === 0) {
-      statusEl.textContent = '⚠️ Tambahkan minimal 1 pengumuman!';
-      statusEl.className = 'status-msg status-error';
-      statusEl.style.display = 'block';
-      return;
-    }
-    
-    try {
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      
-      await rtdb.ref('infoBox').set({
-        announcements: announcements,
-        updatedAt: Date.now(),
-        updatedBy: user.uid || 'unknown'
+      cards.forEach(card => {
+        const title = card.querySelector('.announcement-title').value.trim();
+        const content = card.querySelector('.announcement-content').value.trim();
+        
+        if (title && content) {
+          announcements.push({ title, content });
+        }
       });
       
-      statusEl.textContent = `✅ ${announcements.length} pengumuman berhasil disimpan!`;
-      statusEl.className = 'status-msg status-success';
-      statusEl.style.display = 'block';
+      const statusEl = document.getElementById('statusMsg');
       
-      setTimeout(() => {
-        statusEl.style.display = 'none';
-      }, 5000);
+      if (announcements.length === 0) {
+        statusEl.textContent = '⚠️ Tambahkan minimal 1 pengumuman!';
+        statusEl.className = 'status-msg status-error';
+        statusEl.style.display = 'block';
+        return;
+      }
       
-    } catch (error) {
-      console.error('❌ Gagal simpan:', error);
-      statusEl.textContent = '❌ Gagal menyimpan: ' + error.message;
-      statusEl.className = 'status-msg status-error';
-      statusEl.style.display = 'block';
-    }
-  });
-
-  // === PREVIEW ===
-  document.getElementById('previewBtn').addEventListener('click', () => {
-    const cards = document.querySelectorAll('.announcement-card');
-    let preview = '📋 PREVIEW PENGUMUMAN:\n\n';
-    
-    cards.forEach((card, index) => {
-      const title = card.querySelector('.announcement-title').value.trim();
-      const content = card.querySelector('.announcement-content').value.trim();
-      
-      if (title && content) {
-        preview += `${index + 1}. ${title}\n   ${content}\n\n`;
+      try {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+        await rtdb.ref('infoBox').set({
+          announcements: announcements,
+          updatedAt: Date.now(),
+          updatedBy: user.uid || 'unknown'
+        });
+        
+        statusEl.textContent = `✅ ${announcements.length} pengumuman berhasil disimpan!`;
+        statusEl.className = 'status-msg status-success';
+        statusEl.style.display = 'block';
+        
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 5000);
+        
+      } catch (error) {
+        console.error('❌ Gagal simpan:', error);
+        statusEl.textContent = '❌ Gagal menyimpan: ' + error.message;
+        statusEl.className = 'status-msg status-error';
+        statusEl.style.display = 'block';
       }
     });
-    
-    if (preview === '📋 PREVIEW PENGUMUMAN:\n\n') {
-      alert('Tidak ada pengumuman untuk di-preview.');
-    } else {
-      alert(preview);
-    }
-  });
+  }
+
+  // === PREVIEW ===
+  const previewBtn = document.getElementById('previewBtn');
+  if (previewBtn) {
+    previewBtn.addEventListener('click', () => {
+      const cards = document.querySelectorAll('.announcement-card');
+      let preview = '📋 PREVIEW PENGUMUMAN:\n\n';
+      
+      cards.forEach((card, index) => {
+        const title = card.querySelector('.announcement-title').value.trim();
+        const content = card.querySelector('.announcement-content').value.trim();
+        
+        if (title && content) {
+          preview += `${index + 1}. ${title}\n   ${content}\n\n`;
+        }
+      });
+      
+      if (preview === '📋 PREVIEW PENGUMUMAN:\n\n') {
+        alert('Tidak ada pengumuman untuk di-preview.');
+      } else {
+        alert(preview);
+      }
+    });
+  }
 
   // === LOAD PENGUMUMAN YANG SUDAH ADA ===
   async function loadAnnouncements() {
@@ -141,10 +240,14 @@ function initControlCenter() {
       const data = snapshot.val();
       
       if (data && data.announcements) {
-        document.getElementById('announcementsContainer').innerHTML = '';
-        data.announcements.forEach((announcement, index) => {
-          addAnnouncementCard(announcement.title, announcement.content, index);
-        });
+        const container = document.getElementById('announcementsContainer');
+        if (container) {
+          container.innerHTML = '';
+          data.announcements.forEach((announcement, index) => {
+            addAnnouncementCard(announcement.title, announcement.content, index);
+          });
+          console.log('✅', data.announcements.length, 'pengumuman dimuat');
+        }
       }
     } catch (error) {
       console.error('❌ Gagal load pengumuman:', error);
