@@ -304,10 +304,11 @@
         });
       }
 
+      // ✅ DIPERBAIKI: Kartu Monitoring - Redirect ke monitoring.html
       const cardMonitoring = document.getElementById('cardMonitoring');
       if (cardMonitoring) {
         cardMonitoring.addEventListener('click', () => {
-          alert('🚧 Fitur Monitoring sedang dalam pengembangan.\n\nSilakan hubungi admin untuk informasi lebih lanjut.');
+          window.location.href = './monitoring.html';
         });
       }
     }
